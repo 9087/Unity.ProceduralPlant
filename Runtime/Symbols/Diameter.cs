@@ -6,10 +6,10 @@ namespace ProceduralPlant.Symbols
     [Symbol("!")]
     public class DiameterDecrease : Descriptor
     {
-        public override TransformData Populate(LindenmayerSystem lindenmayerSystem, TransformData transformData, Symbol symbol)
+        public override GenerationContext Generate(LindenmayerSystem lindenmayerSystem, GenerationContext context, Symbol symbol)
         {
-            Debug.LogWarning("Descriptor `DiameterDecrease(!)` is not implemented!");
-            return transformData;
+            context = context.Thin(lindenmayerSystem.parametersInfo.thinningRate);
+            return context;
         }
     }
 }

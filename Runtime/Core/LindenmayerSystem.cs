@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using ProceduralPlant.Symbols;
 using UnityEditor;
 using UnityEngine;
 
@@ -7,7 +8,7 @@ namespace ProceduralPlant.Core
 {
     public class LindenmayerSystem
     {
-        public ParametersInfo parameterInfo { get; private set; }
+        public ParametersInfo parametersInfo { get; private set; }
         
         private Node axiom = null;
         
@@ -15,7 +16,7 @@ namespace ProceduralPlant.Core
 
         public Node current { get; private set; } = null;
         
-        public static LindenmayerSystem Compile(string text, ParametersInfo parameterInfo)
+        public static LindenmayerSystem Compile(string text, ParametersInfo parametersInfo)
         {
             var lindenmayerSystem = new LindenmayerSystem();
             var context = new CompilationContext(text);
@@ -36,7 +37,7 @@ namespace ProceduralPlant.Core
             }
 
             lindenmayerSystem.current = lindenmayerSystem.axiom.Clone();
-            lindenmayerSystem.parameterInfo = parameterInfo;
+            lindenmayerSystem.parametersInfo = parametersInfo;
             return lindenmayerSystem;
         }
 
@@ -76,6 +77,36 @@ namespace ProceduralPlant.Core
         {
             this.current = Simulate(this.current);
             return this;
+        }
+
+        public void MarkOrganFlags()
+        {
+            MarkOrganFlags(this.current);
+        }
+
+        private static void MarkOrganFlags(Node node)
+        {
+            node.organFlags = Node.OrganFlags.None;
+            if (node.next != null)
+            {
+                MarkOrganFlags(node.next);
+                if (!(node.next is Symbol symbol) || symbol.descriptor == null || symbol.descriptor.GetType() != typeof(MoveForwardWithLine))
+                {
+                    node.organFlags |= node.next.organFlags & Node.OrganFlags.Tip;
+                }
+            }
+            else
+            {
+                node.organFlags |= Node.OrganFlags.Tip;
+            }
+            switch (node)
+            {
+                case Symbol symbol:
+                    break;
+                case Branch branch:
+                    MarkOrganFlags(branch.content);
+                    break;
+            }
         }
 
         public override string ToString()

@@ -4,6 +4,15 @@ namespace ProceduralPlant.Core
 {
     public abstract class Node
     {
+        [Flags]
+        public enum OrganFlags
+        {
+            None = 0,
+            Tip = 1 << 1,
+        }
+
+        public OrganFlags organFlags { get; set; } = OrganFlags.None;
+        
         public Node next { get; set; } = null;
 
         public Node last

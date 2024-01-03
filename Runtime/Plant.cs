@@ -1,12 +1,17 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using ProceduralPlant.Core;
 using UnityEngine;
+using UnityEngine.Pool;
 using Object = UnityEngine.Object;
 
 namespace ProceduralPlant
 {
     [DisallowMultipleComponent]
     [ExecuteAlways]
+    [RequireComponent(typeof(MeshRenderer))]
+    [RequireComponent(typeof(MeshFilter))]
     public class Plant : MonoBehaviour
     {
         [SerializeField] private string m_LindenmayerSystemDescription = "F;F->FF-[-F+F+F]+[+F-F-F];";
@@ -43,37 +48,50 @@ namespace ProceduralPlant
 
         [SerializeField] private ParametersInfo m_ParametersInfo = new();
 
+        public ParametersInfo parametersInfo
+        {
+            get => m_ParametersInfo;
+            set
+            {
+                m_ParametersInfo = value;
+                this.Refresh();
+            }
+        }
+
         public LindenmayerSystem lindenmayerSystem { get; private set; } = null;
+
+        public MeshRenderer meshRenderer => GetComponent<MeshRenderer>();
+        
+        public MeshFilter meshFilter => GetComponent<MeshFilter>();
 
         private void Awake()
         {
             Refresh();
         }
 
-        private void Populate(TransformData transformData, Node node)
+        private void Generate(GenerationContext context, Node node)
         {
-            if (node == null)
+            while (node != null)
             {
-                return;
+                switch (node)
+                {
+                    case Symbol symbol:
+                        if (symbol.descriptor != null)
+                        {
+                            context = symbol.descriptor.Generate(this.lindenmayerSystem, context, symbol);
+                        }
+                        break;
+                    case Branch branch:
+                        Generate(context, branch.content);
+                        break;
+                    case Polygon polygon:
+                        Debug.LogWarning("Node `Polygon` is not implemented!");
+                        break;
+                    default:
+                        throw new NotImplementedException(node.ToString());
+                }
+                node = node.next;
             }
-            switch (node)
-            {
-                case Symbol symbol:
-                    if (symbol.descriptor != null)
-                    {
-                        transformData = symbol.descriptor.Populate(this.lindenmayerSystem, transformData, symbol);
-                    }
-                    break;
-                case Branch branch:
-                    Populate(transformData, branch.content);
-                    break;
-                case Polygon polygon:
-                    Debug.LogWarning("Node `Polygon` is not implemented!");
-                    break;
-                default:
-                    throw new NotImplementedException(node.ToString());
-            }
-            Populate(transformData, node.next);
         }
         
         public void Refresh()
@@ -92,7 +110,26 @@ namespace ProceduralPlant
             {
                 lindenmayerSystem.Simulate();
             }
-            Populate(new TransformData(this.transform), lindenmayerSystem.current);
+            lindenmayerSystem.MarkOrganFlags();
+
+            var meshInfo = new GenerationContext.MeshInfo()
+            {
+                vertices = ListPool<Vector3>.Get(),
+                indices = ListPool<int>.Get(),
+                normals = ListPool<Vector3>.Get(),
+            };
+            var context = new GenerationContext(this.transform, meshInfo);
+            Generate(context, lindenmayerSystem.current);
+
+            var mesh = new Mesh();
+            mesh.name = "Procedural Plant";
+            mesh.vertices = meshInfo.vertices.ToArray();
+            mesh.SetIndices(meshInfo.indices.ToArray(), MeshTopology.Triangles, 0);
+            mesh.normals = meshInfo.normals.ToArray();
+            meshFilter.mesh = mesh;
+            ListPool<Vector3>.Release(meshInfo.vertices);
+            ListPool<Vector3>.Release(meshInfo.normals);
+            ListPool<int>.Release(meshInfo.indices);
         }
     }
 }

@@ -6,28 +6,18 @@ namespace ProceduralPlant.Symbols
     [Symbol("\\")]
     public class RollIncrease : Descriptor
     {
-        public override TransformData Populate(LindenmayerSystem lindenmayerSystem, TransformData transformData, Symbol symbol)
+        public override GenerationContext Generate(LindenmayerSystem lindenmayerSystem, GenerationContext context, Symbol symbol)
         {
-            return new TransformData(
-                transformData.transform,
-                transformData.position,
-                transformData.rotation * Quaternion.Euler(0, 0, lindenmayerSystem.parameterInfo.angle),
-                transformData.scale
-                );
+            return context.Rotate(Quaternion.Euler(0, 0, lindenmayerSystem.parametersInfo.angle));
         }
     }
     
     [Symbol("/")]
     public class RollDecrease : Descriptor
     {
-        public override TransformData Populate(LindenmayerSystem lindenmayerSystem, TransformData transformData, Symbol symbol)
+        public override GenerationContext Generate(LindenmayerSystem lindenmayerSystem, GenerationContext context, Symbol symbol)
         {
-            return new TransformData(
-                transformData.transform,
-                transformData.position,
-                transformData.rotation * Quaternion.Euler(0, 0, -lindenmayerSystem.parameterInfo.angle),
-                transformData.scale
-                );
+            return context.Rotate(Quaternion.Euler(0, 0, -lindenmayerSystem.parametersInfo.angle));
         }
     }
 }

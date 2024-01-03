@@ -11,16 +11,16 @@ namespace ProceduralPlant.Editor
     {
         private SerializedProperty lindenmayerSystemDescriptionProperty;
         private SerializedProperty iterationCountProperty;
-        private SerializedProperty parameterInfoProperty;
+        private SerializedProperty parametersInfoProperty;
 
         private Rect templateDropdownButtonRect;
-        private bool parameterInfoFoldout = false;
+        private static bool parameterInfoFoldout = true;
         
         private void OnEnable()
         {
             lindenmayerSystemDescriptionProperty = this.serializedObject.FindProperty("m_LindenmayerSystemDescription");
             iterationCountProperty = this.serializedObject.FindProperty("m_IterationCount");
-            parameterInfoProperty = this.serializedObject.FindProperty("m_ParametersInfo");
+            parametersInfoProperty = this.serializedObject.FindProperty("m_ParametersInfo");
         }
 
         public override void OnInspectorGUI()
@@ -67,8 +67,8 @@ namespace ProceduralPlant.Editor
                     {
                         var (template, parameterInfo) = ((string, ParametersInfo))data;
                         lindenmayerSystemDescriptionProperty.stringValue = template;
-                        parameterInfoProperty.FindPropertyRelative("angle").floatValue = parameterInfo.angle;
-                        parameterInfoProperty.FindPropertyRelative("length").floatValue = parameterInfo.length;
+                        parametersInfoProperty.FindPropertyRelative("angle").floatValue = parameterInfo.angle;
+                        parametersInfoProperty.FindPropertyRelative("length").floatValue = parameterInfo.length;
                         iterationCountProperty.intValue = 3;
                         this.serializedObject.ApplyModifiedProperties();
                         plantController.Refresh();
@@ -102,8 +102,15 @@ namespace ProceduralPlant.Editor
             {
                 EditorGUI.indentLevel += 1;
                 EditorGUI.BeginChangeCheck();
-                EditorGUILayout.PropertyField(parameterInfoProperty.FindPropertyRelative("angle"));
-                EditorGUILayout.PropertyField(parameterInfoProperty.FindPropertyRelative("length"));
+
+                SerializedProperty childProperty = parametersInfoProperty.Copy();
+                if (childProperty.Next(true))
+                {
+                    do
+                    {
+                        EditorGUILayout.PropertyField(childProperty);
+                    } while (childProperty.Next(false));
+                }
                 dirty |= EditorGUI.EndChangeCheck();
                 EditorGUI.indentLevel -= 1;
             }

@@ -6,28 +6,18 @@ namespace ProceduralPlant.Symbols
     [Symbol("&")]
     public class PitchIncrease : Descriptor
     {
-        public override TransformData Populate(LindenmayerSystem lindenmayerSystem, TransformData transformData, Symbol symbol)
+        public override GenerationContext Generate(LindenmayerSystem lindenmayerSystem, GenerationContext context, Symbol symbol)
         {
-            return new TransformData(
-                transformData.transform,
-                transformData.position,
-                transformData.rotation * Quaternion.Euler(lindenmayerSystem.parameterInfo.angle, 0, 0),
-                transformData.scale
-                );
+            return context.Rotate(Quaternion.Euler(lindenmayerSystem.parametersInfo.angle, 0, 0));
         }
     }
     
     [Symbol("^")]
     public class PitchDecrease : Descriptor
     {
-        public override TransformData Populate(LindenmayerSystem lindenmayerSystem, TransformData transformData, Symbol symbol)
+        public override GenerationContext Generate(LindenmayerSystem lindenmayerSystem, GenerationContext context, Symbol symbol)
         {
-            return new TransformData(
-                transformData.transform,
-                transformData.position,
-                transformData.rotation * Quaternion.Euler(-lindenmayerSystem.parameterInfo.angle, 0, 0),
-                transformData.scale
-                );
+            return context.Rotate(Quaternion.Euler(-lindenmayerSystem.parametersInfo.angle, 0, 0));
         }
     }
 }

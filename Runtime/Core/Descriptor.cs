@@ -6,6 +6,6 @@ namespace ProceduralPlant.Core
     {
         public string name { get; internal set; }
 
-        public abstract TransformData Populate(LindenmayerSystem lindenmayerSystem, TransformData transformData, Symbol symbol);
+        public abstract GenerationContext Generate(LindenmayerSystem lindenmayerSystem, GenerationContext context, Symbol symbol);
     }
 }
