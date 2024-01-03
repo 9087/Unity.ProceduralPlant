@@ -1,0 +1,14 @@
+{
+    "name": "com.proceduralplant",
+    "version": "0.1.0",
+    "displayName": "Procedural Plant",
+    "unity": "2021.3",
+    "unityRelease": "19f1c1",
+    "dependencies": {},
+    "keywords": [],
+    "author":
+    {
+        "name": "Wu Zhiwei",
+        "email": "503098961@QQ.com"
+    }
+}
