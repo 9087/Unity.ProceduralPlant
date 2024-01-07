@@ -77,13 +77,13 @@ namespace ProceduralPlant.Editor
                     GenericMenu menu = new GenericMenu();
                     Dictionary<string, (string, ParametersInfo)> templates = new()
                     {
-                        {"Similar plant structure (Figure 1.24.c)",
+                        {"Plant-like structure (Figure 1.24.c)",
                             ("F;F->FF-[-F+F+F]+[+F-F-F];",
                                 new() { angle = 22.5f, length = 5, })},
-                        {"Similar plant structure (Figure 1.24.f)",
+                        {"Plant-like structure (Figure 1.24.f)",
                             ("X;X->F-[[X]+X]+F[+FX]-X;F->FF;",
                                 new() { angle = 22.5f, length = 5, })},
-                        {"Undergrowth of dwarf trees (Figure 1.25)",
+                        {"A three-dimensional bush-like structure (Figure 1.25)",
                             ("A;A->[&FL!A]/////'[&FL!A]///////'[&FL!A];F->S/////F;S->FL;L->['''^^{-f+f+f-|-f+f+f}];",
                                 new() { angle = 22.5f, length = 5, })},
                     };
