@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace ProceduralPlant.Core
 {
@@ -12,7 +13,7 @@ namespace ProceduralPlant.Core
             public List<int> indices;
         }
 
-        public MeshInfo meshInfo;
+        public List<MeshInfo> meshInfos = new();
         
         public readonly Transform transform;
 
@@ -142,40 +143,53 @@ namespace ProceduralPlant.Core
         public Point current { get; private set; } = Point.origin;
         
         public Line last { get; private set; } = null;
-        
-        public GenerationContext(Transform transform, MeshInfo meshInfo)
+
+        private System.Action<Point> _onPointArrived;
+        public event System.Action<Point> onPointArrived
+        {
+            add
+            {
+                _onPointArrived += value;
+                value?.Invoke(this.current);
+            }
+            remove => _onPointArrived -= value;
+        }
+
+        public GenerationContext(Transform transform, List<MeshInfo> meshInfos)
         {
             this.transform = transform;
-            this.meshInfo = meshInfo;
+            this.meshInfos = meshInfos;
         }
 
         public GenerationContext MoveForwardWithoutLine(float length)
         {
-            var context = new GenerationContext(this.transform, this.meshInfo)
+            var context = new GenerationContext(this.transform, this.meshInfos)
             {
-                meshInfo = this.meshInfo,
+                _onPointArrived = _onPointArrived,
                 current = this.current.MoveForward(length),
                 last = null,
             };
+            _onPointArrived?.Invoke(context.current);
             return context;
         }
 
         public GenerationContext MoveForwardWithLine(float length)
         {
-            var context = new GenerationContext(this.transform, this.meshInfo)
+            var context = new GenerationContext(this.transform, this.meshInfos)
             {
-                meshInfo = this.meshInfo,
+                _onPointArrived = _onPointArrived,
                 current = this.current.MoveForward(length),
             };
             context.last = new Line(this.last != null ? this.last.end : this.current, context.current);
+            _onPointArrived?.Invoke(context.current);
             return context;
         }
 
         public GenerationContext Rotate(Quaternion delta)
         {
-            return new GenerationContext(this.transform, this.meshInfo)
+            return new GenerationContext(this.transform, this.meshInfos)
             {
-                meshInfo = this.meshInfo,
+                _onPointArrived = _onPointArrived,
                 current = this.current.Rotate(delta),
                 last = this.last,
             };
@@ -183,9 +197,9 @@ namespace ProceduralPlant.Core
 
         public GenerationContext Thin(float thinningRate)
         {
-            return new GenerationContext(this.transform, this.meshInfo)
+            return new GenerationContext(this.transform, this.meshInfos)
             {
-                meshInfo = this.meshInfo,
+                _onPointArrived = _onPointArrived,
                 current = this.current.Thin(thinningRate),
                 last = this.last,
             };

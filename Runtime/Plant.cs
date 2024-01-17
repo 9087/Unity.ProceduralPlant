@@ -4,6 +4,7 @@ using System.Linq;
 using ProceduralPlant.Core;
 using UnityEngine;
 using UnityEngine.Pool;
+using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
 
 namespace ProceduralPlant
@@ -85,13 +86,45 @@ namespace ProceduralPlant
                         Generate(context, branch.content);
                         break;
                     case Polygon polygon:
-                        Debug.LogWarning("Node `Polygon` is not implemented!");
+                        var points = ListPool<GenerationContext.Point>.Get();
+                        void OnPointArrived(GenerationContext.Point point)
+                        {
+                            points.Add(point);
+                        }
+                        context.onPointArrived += OnPointArrived;
+                        Generate(context, polygon.content);
+                        context.onPointArrived -= OnPointArrived;
+                        Polygon.Generate(this.lindenmayerSystem, context, points);
+                        ListPool<GenerationContext.Point>.Release(points);
                         break;
                     default:
                         throw new NotImplementedException(node.ToString());
                 }
                 node = node.next;
             }
+        }
+
+        private void CreatePlant(int i, GenerationContext.MeshInfo meshInfo)
+        {
+            MeshFilter meshFilter_ = null;
+            if (i == 0)
+            {
+                meshFilter_ = this.meshFilter;
+            }
+            else
+            {
+                GameObject sub = new GameObject();
+                sub.hideFlags = HideFlags.HideAndDontSave;
+                sub.transform.parent = this.transform;
+                sub.AddComponent<MeshRenderer>().sharedMaterials = this.meshRenderer.sharedMaterials;
+                meshFilter_ = sub.AddComponent<MeshFilter>();
+            }
+            var mesh = new Mesh();
+            mesh.name = "Procedural Plant";
+            mesh.vertices = meshInfo.vertices.ToArray();
+            mesh.SetIndices(meshInfo.indices.ToArray(), MeshTopology.Triangles, 0);
+            mesh.normals = meshInfo.normals.ToArray();
+            meshFilter_.mesh = mesh;
         }
         
         public void Refresh()
@@ -112,24 +145,37 @@ namespace ProceduralPlant
             }
             lindenmayerSystem.MarkOrganFlags();
 
-            var meshInfo = new GenerationContext.MeshInfo()
+            var meshInfos = ListPool<GenerationContext.MeshInfo>.Get();
+            for (int i = 0; i < 2; i++)
             {
-                vertices = ListPool<Vector3>.Get(),
-                indices = ListPool<int>.Get(),
-                normals = ListPool<Vector3>.Get(),
-            };
-            var context = new GenerationContext(this.transform, meshInfo);
+                var meshInfo = new GenerationContext.MeshInfo()
+                {
+                    vertices = ListPool<Vector3>.Get(),
+                    indices = ListPool<int>.Get(),
+                    normals = ListPool<Vector3>.Get(),
+                };
+                meshInfos.Add(meshInfo);
+            }
+            var context = new GenerationContext(this.transform, meshInfos);
             Generate(context, lindenmayerSystem.current);
 
-            var mesh = new Mesh();
-            mesh.name = "Procedural Plant";
-            mesh.vertices = meshInfo.vertices.ToArray();
-            mesh.SetIndices(meshInfo.indices.ToArray(), MeshTopology.Triangles, 0);
-            mesh.normals = meshInfo.normals.ToArray();
-            meshFilter.mesh = mesh;
-            ListPool<Vector3>.Release(meshInfo.vertices);
-            ListPool<Vector3>.Release(meshInfo.normals);
-            ListPool<int>.Release(meshInfo.indices);
+            foreach (Transform childTransform in this.transform)
+            {
+                Object.DestroyImmediate(childTransform.gameObject);
+            }
+
+            for (int i = 0; i < meshInfos.Count; i++)
+            {
+                CreatePlant(i, meshInfos[i]);
+            }
+
+            foreach (var meshInfo in meshInfos)
+            {
+                ListPool<Vector3>.Release(meshInfo.vertices);
+                ListPool<Vector3>.Release(meshInfo.normals);
+                ListPool<int>.Release(meshInfo.indices);
+            }
+            ListPool<GenerationContext.MeshInfo>.Release(meshInfos);
         }
     }
 }

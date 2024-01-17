@@ -32,7 +32,7 @@ namespace ProceduralPlant.Symbols
 
             var stepAngle = 360.0f / sideCount;
 
-            var meshInfo = context.meshInfo;
+            var meshInfo = context.meshInfos[0];
             var head = meshInfo.vertices.Count;
             int eIndex = 0;
             float minSqrDistance = float.MaxValue;

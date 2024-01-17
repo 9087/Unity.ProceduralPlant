@@ -65,31 +65,34 @@ namespace ProceduralPlant.Editor
                 {
                     void Apply(object data)
                     {
-                        var (template, parameterInfo) = ((string, ParametersInfo))data;
+                        var (template, parameterInfo, iterationCount) = ((string, ParametersInfo, int))data;
                         lindenmayerSystemDescriptionProperty.stringValue = template;
                         parametersInfoProperty.FindPropertyRelative("angle").floatValue = parameterInfo.angle;
                         parametersInfoProperty.FindPropertyRelative("length").floatValue = parameterInfo.length;
-                        iterationCountProperty.intValue = 3;
+                        iterationCountProperty.intValue = iterationCount;
                         this.serializedObject.ApplyModifiedProperties();
                         plantController.Refresh();
                         this.Repaint();
                     }
                     GenericMenu menu = new GenericMenu();
-                    Dictionary<string, (string, ParametersInfo)> templates = new()
+                    Dictionary<string, (string, ParametersInfo, int)> templates = new()
                     {
                         {"Plant-like structure (Figure 1.24.c)",
                             ("F;F->FF-[-F+F+F]+[+F-F-F];",
-                                new() { angle = 22.5f, length = 5, })},
+                                new() { angle = 22.5f, length = 5, },
+                                3)},
                         {"Plant-like structure (Figure 1.24.f)",
                             ("X;X->F-[[X]+X]+F[+FX]-X;F->FF;",
-                                new() { angle = 22.5f, length = 5, })},
+                                new() { angle = 22.5f, length = 5, },
+                                3)},
                         {"A three-dimensional bush-like structure (Figure 1.25)",
                             ("A;A->[&FL!A]/////'[&FL!A]///////'[&FL!A];F->S/////F;S->FL;L->['''^^{-f+f+f-|-f+f+f}];",
-                                new() { angle = 22.5f, length = 5, })},
+                                new() { angle = 22.5f, length = 1, sideCount = 4, thinningRate = 0.5f, },
+                                7)},
                     };
-                    foreach (var (title, (template, parameterInfo)) in templates)
+                    foreach (var (title, (template, parameterInfo, iterationCount_)) in templates)
                     {
-                        menu.AddItem(new GUIContent(title), template == lindenmayerSystemDescriptionProperty.stringValue, Apply, (template, parameterInfo));
+                        menu.AddItem(new GUIContent(title), template == lindenmayerSystemDescriptionProperty.stringValue, Apply, (template, parameterInfo, iterationCount_));
                     }
                     menu.DropDown(templateDropdownButtonRect);
                 }
