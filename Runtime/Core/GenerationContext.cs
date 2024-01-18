@@ -1,6 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace ProceduralPlant.Core
 {
@@ -8,12 +8,10 @@ namespace ProceduralPlant.Core
     {
         public class MeshInfo
         {
-            public List<Vector3> vertices;
-            public List<Vector3> normals;
-            public List<int> indices;
+            public readonly List<Vector3> vertices = new();
+            public readonly List<Vector3> normals = new();
+            public readonly List<int> indices = new();
         }
-
-        public List<MeshInfo> meshInfos = new();
         
         public readonly Transform transform;
 
@@ -155,15 +153,15 @@ namespace ProceduralPlant.Core
             remove => _onPointArrived -= value;
         }
 
-        public GenerationContext(Transform transform, List<MeshInfo> meshInfos)
+        public GenerationContext(Transform transform, Dictionary<MeshTag, List<MeshInfo>> meshInfoData)
         {
             this.transform = transform;
-            this.meshInfos = meshInfos;
+            this.meshInfoData = meshInfoData;
         }
 
         public GenerationContext MoveForwardWithoutLine(float length)
         {
-            var context = new GenerationContext(this.transform, this.meshInfos)
+            var context = new GenerationContext(this.transform, this.meshInfoData)
             {
                 _onPointArrived = _onPointArrived,
                 current = this.current.MoveForward(length),
@@ -175,7 +173,7 @@ namespace ProceduralPlant.Core
 
         public GenerationContext MoveForwardWithLine(float length)
         {
-            var context = new GenerationContext(this.transform, this.meshInfos)
+            var context = new GenerationContext(this.transform, this.meshInfoData)
             {
                 _onPointArrived = _onPointArrived,
                 current = this.current.MoveForward(length),
@@ -187,7 +185,7 @@ namespace ProceduralPlant.Core
 
         public GenerationContext Rotate(Quaternion delta)
         {
-            return new GenerationContext(this.transform, this.meshInfos)
+            return new GenerationContext(this.transform, this.meshInfoData)
             {
                 _onPointArrived = _onPointArrived,
                 current = this.current.Rotate(delta),
@@ -197,12 +195,63 @@ namespace ProceduralPlant.Core
 
         public GenerationContext Thin(float thinningRate)
         {
-            return new GenerationContext(this.transform, this.meshInfos)
+            return new GenerationContext(this.transform, this.meshInfoData)
             {
                 _onPointArrived = _onPointArrived,
                 current = this.current.Thin(thinningRate),
                 last = this.last,
             };
+        }
+
+        public enum MeshTag
+        {
+            Branch,
+            Leaf,
+        }
+
+        private readonly Dictionary<MeshTag, List<MeshInfo>> meshInfoData;
+
+        MeshInfo GetMeshInfo(MeshTag tag)
+        {
+            if (!meshInfoData.TryGetValue(tag, out var meshInfos))
+            {
+                meshInfoData[tag] = new();
+                meshInfos = meshInfoData[tag];
+                meshInfos.Add(new());
+            }
+            return meshInfos.Last();
+        }
+        
+        public void AppendVertex(MeshTag tag, Vector3 position, Vector3 normal)
+        {
+            var meshInfo = GetMeshInfo(tag);
+            meshInfo.vertices.Add(position);
+            meshInfo.normals.Add(normal);
+        }
+
+        public void AppendIndex(MeshTag tag, int index)
+        {
+            var meshInfo = GetMeshInfo(tag);
+            meshInfo.indices.Add(index);
+        }
+
+        public int GetCurrentIndex(MeshTag tag)
+        {
+            return GetMeshInfo(tag).vertices.Count;
+        }
+
+        public Vector3 GetVertexPosition(MeshTag tag, int index)
+        {
+            return GetMeshInfo(tag).vertices[index];
+        }
+
+        public void Prepare(MeshTag tag, int vertexCount)
+        {
+            Debug.Assert(vertexCount < 65536);
+            if (GetCurrentIndex(tag) + vertexCount > 65536)
+            {
+                meshInfoData[tag].Add(new());
+            }
         }
     }
 }

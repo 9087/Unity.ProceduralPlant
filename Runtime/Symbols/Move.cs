@@ -18,6 +18,8 @@ namespace ProceduralPlant.Symbols
     {
         private static void GeneratePipe(GenerationContext context, int sideCount, GenerationContext.Line line)
         {
+            context.Prepare(GenerationContext.MeshTag.Branch, sideCount * 2);
+            
             var sAxis = line.start.rotation * Vector3.forward;
             var eAxis = line.end.rotation * Vector3.forward;
             
@@ -32,23 +34,20 @@ namespace ProceduralPlant.Symbols
 
             var stepAngle = 360.0f / sideCount;
 
-            var meshInfo = context.meshInfos[0];
-            var head = meshInfo.vertices.Count;
+            var head = context.GetCurrentIndex(GenerationContext.MeshTag.Branch);
             int eIndex = 0;
             float minSqrDistance = float.MaxValue;
             for (int i = 0; i < sideCount; i++)
             {
                 var sVertex = (Quaternion.AngleAxis(i * stepAngle, sAxis) * sFirstSide).normalized * sRadius + sPosition;
                 var sNormal = (Quaternion.AngleAxis((i - 0.5f) * stepAngle, sAxis) * sFirstSide).normalized;
-                meshInfo.vertices.Add(sVertex);
-                meshInfo.normals.Add(sNormal);
+                context.AppendVertex(GenerationContext.MeshTag.Branch, sVertex, sNormal);
                 
                 var eVertex = (Quaternion.AngleAxis(i * stepAngle, eAxis) * eFirstSide).normalized * eRadius + ePosition;
                 var eNormal = (Quaternion.AngleAxis((i - 0.5f) * stepAngle, eAxis) * eFirstSide).normalized;
-                meshInfo.vertices.Add(eVertex);
-                meshInfo.normals.Add(eNormal);
+                context.AppendVertex(GenerationContext.MeshTag.Branch, eVertex, eNormal);
 
-                float sqrDistance = (meshInfo.vertices[head] - eVertex).sqrMagnitude;
+                float sqrDistance = (context.GetVertexPosition(GenerationContext.MeshTag.Branch, head) - eVertex).sqrMagnitude;
                 if (sqrDistance < minSqrDistance)
                 {
                     minSqrDistance = sqrDistance;
@@ -58,13 +57,13 @@ namespace ProceduralPlant.Symbols
 
             for (int i = 0; i < sideCount; i++)
             {
-                meshInfo.indices.Add(head + (2 * i + 0) % (2 * sideCount));
-                meshInfo.indices.Add(head + (2 * i + 2) % (2 * sideCount));
-                meshInfo.indices.Add(head + (2 * (i + eIndex) + 1) % (2 * sideCount));
+                context.AppendIndex(GenerationContext.MeshTag.Branch, head + (2 * i + 0) % (2 * sideCount));
+                context.AppendIndex(GenerationContext.MeshTag.Branch, head + (2 * i + 2) % (2 * sideCount));
+                context.AppendIndex(GenerationContext.MeshTag.Branch, head + (2 * (i + eIndex) + 1) % (2 * sideCount));
                 
-                meshInfo.indices.Add(head + (2 * (i + eIndex) + 1) % (2 * sideCount));
-                meshInfo.indices.Add(head + (2 * i + 2) % (2 * sideCount));
-                meshInfo.indices.Add(head + (2 * (i + eIndex) + 3) % (2 * sideCount));
+                context.AppendIndex(GenerationContext.MeshTag.Branch, head + (2 * (i + eIndex) + 1) % (2 * sideCount));
+                context.AppendIndex(GenerationContext.MeshTag.Branch, head + (2 * i + 2) % (2 * sideCount));
+                context.AppendIndex(GenerationContext.MeshTag.Branch, head + (2 * (i + eIndex) + 3) % (2 * sideCount));
             }
         }
         

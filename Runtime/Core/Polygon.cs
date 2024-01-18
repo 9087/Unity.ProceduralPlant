@@ -27,6 +27,7 @@ namespace ProceduralPlant.Core
         public static void Generate(LindenmayerSystem lindenmayerSystem, GenerationContext context, List<GenerationContext.Point> points)
         {
             points.RemoveAt(points.Count - 1);
+            context.Prepare(GenerationContext.MeshTag.Leaf, points.Count + 1);
             Vector3 positionAverage = Vector3.zero;
             Vector3 normalAverage = Vector3.zero;
             foreach (var point in points)
@@ -34,32 +35,29 @@ namespace ProceduralPlant.Core
                 positionAverage += point.position;
             }
             positionAverage /= points.Count;
-            var meshInfo = context.meshInfos[1];
-            var head = meshInfo.vertices.Count;
+            var head = context.GetCurrentIndex(GenerationContext.MeshTag.Leaf);
             for (int i = 0; i < points.Count; ++i)
             {
                 GenerationContext.Point last = points[(i - 1 + points.Count) % points.Count];
                 GenerationContext.Point next = points[(i + 1) % points.Count];
                 GenerationContext.Point current = points[i];
                 var normal = Vector3.Cross(last.position - current.position, next.position - current.position);
-                meshInfo.vertices.Add(current.position);
-                meshInfo.normals.Add(normal);
+                context.AppendVertex(GenerationContext.MeshTag.Leaf, current.position, normal);
                 normalAverage += normal;
             }
             normalAverage /= points.Count;
-            meshInfo.vertices.Add(positionAverage);
-            meshInfo.normals.Add(normalAverage);
+            context.AppendVertex(GenerationContext.MeshTag.Leaf, positionAverage, normalAverage);
             for (int i = 0; i < points.Count; ++i)
             {
                 int last = head + (i - 1 + points.Count) % points.Count;
                 int current = head + (i) % points.Count;
                 int center = head + points.Count;
-                meshInfo.indices.Add(last);
-                meshInfo.indices.Add(center);
-                meshInfo.indices.Add(current);
-                meshInfo.indices.Add(current);
-                meshInfo.indices.Add(center);
-                meshInfo.indices.Add(last);
+                context.AppendIndex(GenerationContext.MeshTag.Leaf, last);
+                context.AppendIndex(GenerationContext.MeshTag.Leaf, center);
+                context.AppendIndex(GenerationContext.MeshTag.Leaf, current);
+                context.AppendIndex(GenerationContext.MeshTag.Leaf, current);
+                context.AppendIndex(GenerationContext.MeshTag.Leaf, center);
+                context.AppendIndex(GenerationContext.MeshTag.Leaf, last);
             }
         }
     }

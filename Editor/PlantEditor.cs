@@ -15,6 +15,7 @@ namespace ProceduralPlant.Editor
 
         private Rect templateDropdownButtonRect;
         private static bool parameterInfoFoldout = true;
+        private static bool meshFilterListFoldout = false;
         
         private void OnEnable()
         {
@@ -112,7 +113,8 @@ namespace ProceduralPlant.Editor
                     do
                     {
                         EditorGUILayout.PropertyField(childProperty);
-                    } while (childProperty.Next(false));
+                    }
+                    while (childProperty.Next(false));
                 }
                 dirty |= EditorGUI.EndChangeCheck();
                 EditorGUI.indentLevel -= 1;
@@ -136,6 +138,22 @@ namespace ProceduralPlant.Editor
                 this.serializedObject.ApplyModifiedProperties();
                 plantController.Refresh();
             }
+
+            #region MeshFilter List
+            
+            meshFilterListFoldout = EditorGUILayout.Foldout(meshFilterListFoldout, new GUIContent("MeshFilter List"));
+            if (meshFilterListFoldout)
+            {
+                EditorGUI.indentLevel += 1;
+                for (int i = 0; i < plantController.meshFilters.Count; i++)
+                {
+                    var meshFilter = plantController.meshFilters[i];
+                    EditorGUILayout.ObjectField(meshFilter, typeof(MeshFilter));
+                }
+                EditorGUI.indentLevel -= 1;
+            }
+
+            #endregion
 
             if (plantController.lindenmayerSystem == null)
             {
