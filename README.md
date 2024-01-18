@@ -42,8 +42,22 @@ F->S/////F;
 S->FL;
 ```
 
+![Figure 1.25 n=7 delta=22.5](Documentation/figure.1.25.n=7.delta=22.5f.png)
+
+```
+n = 7, δ = 22.5
+A;
+A;A->[&FL!A]/////'[&FL!A]///////'[&FL!A];
+F->S/////F;
+S->FL;
+L->['''^^{-f+f+f-|-f+f+f}];
+```
+
 ## TODO
 
-- [ ] Generate leaf mesh
+- [x] Generate leaf mesh
 - [ ] Optimize vertex and triangle count
 - [ ] Optimize generation efficiency
+- [ ] Use different materials on different parts
+- [ ] Stochastic application of productions
+- [ ] Timed Lindenmayer systems
