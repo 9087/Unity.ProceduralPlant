@@ -2,15 +2,17 @@ using System;
 
 namespace ProceduralPlant.Core
 {
+    [Flags]
+    public enum OrganFlags
+    {
+        None = 0,
+        Branch = 1 << 0,
+        Leaf = 1 << 1,
+        Tip = 1 << 10,
+    }
+        
     public abstract class Node
     {
-        [Flags]
-        public enum OrganFlags
-        {
-            None = 0,
-            Tip = 1 << 1,
-        }
-
         public OrganFlags organFlags { get; set; } = OrganFlags.None;
         
         public Node next { get; set; } = null;

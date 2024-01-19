@@ -84,29 +84,35 @@ namespace ProceduralPlant.Core
             MarkOrganFlags(this.current);
         }
 
-        private static void MarkOrganFlags(Node node)
+        private static OrganFlags MarkOrganFlags(Node node)
         {
-            node.organFlags = Node.OrganFlags.None;
-            if (node.next != null)
+            if (node == null)
             {
-                MarkOrganFlags(node.next);
-                if (!(node.next is Symbol symbol) || symbol.descriptor == null || symbol.descriptor.GetType() != typeof(MoveForwardWithLine))
-                {
-                    node.organFlags |= node.next.organFlags & Node.OrganFlags.Tip;
-                }
+                return OrganFlags.Tip;
             }
-            else
-            {
-                node.organFlags |= Node.OrganFlags.Tip;
-            }
+            node.organFlags = OrganFlags.None;
+            var propagation = MarkOrganFlags(node.next);
             switch (node)
             {
                 case Symbol symbol:
+                    if (symbol.descriptor?.GetType() == typeof(MoveForwardWithLine))
+                    {
+                        node.organFlags |= OrganFlags.Branch;
+                        node.organFlags |= (propagation & OrganFlags.Tip);
+                        propagation &= ~OrganFlags.Tip;
+                    }
+                    break;
+                case Polygon:
+                    node.organFlags |= OrganFlags.Leaf;
                     break;
                 case Branch branch:
-                    MarkOrganFlags(branch.content);
+                    if (!MarkOrganFlags(branch.content).HasFlag(OrganFlags.Tip))
+                    {
+                        propagation &= ~OrganFlags.Tip;
+                    }
                     break;
             }
+            return propagation;
         }
 
         public override string ToString()

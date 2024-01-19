@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -153,7 +154,7 @@ namespace ProceduralPlant.Core
             remove => _onPointArrived -= value;
         }
 
-        public GenerationContext(Transform transform, Dictionary<MeshTag, List<MeshInfo>> meshInfoData)
+        public GenerationContext(Transform transform, Dictionary<OrganFlags, List<MeshInfo>> meshInfoData)
         {
             this.transform = transform;
             this.meshInfoData = meshInfoData;
@@ -203,54 +204,48 @@ namespace ProceduralPlant.Core
             };
         }
 
-        public enum MeshTag
-        {
-            Branch,
-            Leaf,
-        }
+        private readonly Dictionary<OrganFlags, List<MeshInfo>> meshInfoData;
 
-        private readonly Dictionary<MeshTag, List<MeshInfo>> meshInfoData;
-
-        MeshInfo GetMeshInfo(MeshTag tag)
+        MeshInfo GetMeshInfo(OrganFlags flags)
         {
-            if (!meshInfoData.TryGetValue(tag, out var meshInfos))
+            if (!meshInfoData.TryGetValue(flags, out var meshInfos))
             {
-                meshInfoData[tag] = new();
-                meshInfos = meshInfoData[tag];
+                meshInfoData[flags] = new();
+                meshInfos = meshInfoData[flags];
                 meshInfos.Add(new());
             }
             return meshInfos.Last();
         }
         
-        public void AppendVertex(MeshTag tag, Vector3 position, Vector3 normal)
+        public void AppendVertex(OrganFlags flags, Vector3 position, Vector3 normal)
         {
-            var meshInfo = GetMeshInfo(tag);
+            var meshInfo = GetMeshInfo(flags);
             meshInfo.vertices.Add(position);
             meshInfo.normals.Add(normal);
         }
 
-        public void AppendIndex(MeshTag tag, int index)
+        public void AppendIndex(OrganFlags flags, int index)
         {
-            var meshInfo = GetMeshInfo(tag);
+            var meshInfo = GetMeshInfo(flags);
             meshInfo.indices.Add(index);
         }
 
-        public int GetCurrentIndex(MeshTag tag)
+        public int GetCurrentIndex(OrganFlags flags)
         {
-            return GetMeshInfo(tag).vertices.Count;
+            return GetMeshInfo(flags).vertices.Count;
         }
 
-        public Vector3 GetVertexPosition(MeshTag tag, int index)
+        public Vector3 GetVertexPosition(OrganFlags flags, int index)
         {
-            return GetMeshInfo(tag).vertices[index];
+            return GetMeshInfo(flags).vertices[index];
         }
 
-        public void Prepare(MeshTag tag, int vertexCount)
+        public void Prepare(OrganFlags flags, int vertexCount)
         {
             Debug.Assert(vertexCount < 65536);
-            if (GetCurrentIndex(tag) + vertexCount > 65536)
+            if (GetCurrentIndex(flags) + vertexCount > 65536)
             {
-                meshInfoData[tag].Add(new());
+                meshInfoData[flags].Add(new());
             }
         }
     }

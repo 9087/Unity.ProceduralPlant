@@ -95,7 +95,7 @@ namespace ProceduralPlant
                         context.onPointArrived += OnPointArrived;
                         Generate(context, polygon.content);
                         context.onPointArrived -= OnPointArrived;
-                        Polygon.Generate(this.lindenmayerSystem, context, points);
+                        Polygon.Generate(this.lindenmayerSystem, context, polygon, points);
                         ListPool<GenerationContext.Point>.Release(points);
                         break;
                     default:
@@ -105,16 +105,16 @@ namespace ProceduralPlant
             }
         }
 
-        private void CreatePlant(int i, GenerationContext.MeshInfo meshInfo)
+        private void CreatePlant(string name, GenerationContext.MeshInfo meshInfo)
         {
             MeshFilter meshFilter_ = null;
-            GameObject sub = new GameObject($"Procedural Plant Mesh {i}");
+            GameObject sub = new GameObject($"Procedural Plant Mesh {name}");
             sub.hideFlags = HideFlags.HideAndDontSave;
             sub.transform.parent = this.transform;
             sub.AddComponent<MeshRenderer>().sharedMaterials = this.meshRenderer.sharedMaterials;
             meshFilter_ = sub.AddComponent<MeshFilter>();
             var mesh = new Mesh();
-            mesh.name = $"Procedural Plant Mesh {i}";
+            mesh.name = $"Procedural Plant Mesh {name}";
             mesh.vertices = meshInfo.vertices.ToArray();
             mesh.SetIndices(meshInfo.indices.ToArray(), MeshTopology.Triangles, 0);
             mesh.normals = meshInfo.normals.ToArray();
@@ -140,7 +140,7 @@ namespace ProceduralPlant
             }
             lindenmayerSystem.MarkOrganFlags();
 
-            var meshInfoData = DictionaryPool<GenerationContext.MeshTag, List<GenerationContext.MeshInfo>>.Get(); 
+            var meshInfoData = DictionaryPool<OrganFlags, List<GenerationContext.MeshInfo>>.Get(); 
             var context = new GenerationContext(this.transform, meshInfoData);
             Generate(context, lindenmayerSystem.current);
 
@@ -150,16 +150,16 @@ namespace ProceduralPlant
             }
 
             meshFilters.Clear();
-            int index = 0;
-            foreach (var (tag, list) in meshInfoData)
+            foreach (var (flags, list) in meshInfoData)
             {
+                int index = 0;
                 foreach (var meshInfo in list)
                 {
-                    CreatePlant(index, meshInfo);
+                    CreatePlant($"Plant {flags} {index}", meshInfo);
                     index++;
                 }
             }
-            DictionaryPool<GenerationContext.MeshTag, List<GenerationContext.MeshInfo>>.Release(meshInfoData);
+            DictionaryPool<OrganFlags, List<GenerationContext.MeshInfo>>.Release(meshInfoData);
         }
     }
 }

@@ -24,10 +24,10 @@ namespace ProceduralPlant.Core
             return $"{{{content}}}" + next;
         }
 
-        public static void Generate(LindenmayerSystem lindenmayerSystem, GenerationContext context, List<GenerationContext.Point> points)
+        public static void Generate(LindenmayerSystem lindenmayerSystem, GenerationContext context, Polygon polygon, List<GenerationContext.Point> points)
         {
             points.RemoveAt(points.Count - 1);
-            context.Prepare(GenerationContext.MeshTag.Leaf, points.Count + 1);
+            context.Prepare(polygon.organFlags, points.Count + 1);
             Vector3 positionAverage = Vector3.zero;
             Vector3 normalAverage = Vector3.zero;
             foreach (var point in points)
@@ -35,29 +35,29 @@ namespace ProceduralPlant.Core
                 positionAverage += point.position;
             }
             positionAverage /= points.Count;
-            var head = context.GetCurrentIndex(GenerationContext.MeshTag.Leaf);
+            var head = context.GetCurrentIndex(polygon.organFlags);
             for (int i = 0; i < points.Count; ++i)
             {
                 GenerationContext.Point last = points[(i - 1 + points.Count) % points.Count];
                 GenerationContext.Point next = points[(i + 1) % points.Count];
                 GenerationContext.Point current = points[i];
                 var normal = Vector3.Cross(last.position - current.position, next.position - current.position);
-                context.AppendVertex(GenerationContext.MeshTag.Leaf, current.position, normal);
+                context.AppendVertex(polygon.organFlags, current.position, normal);
                 normalAverage += normal;
             }
             normalAverage /= points.Count;
-            context.AppendVertex(GenerationContext.MeshTag.Leaf, positionAverage, normalAverage);
+            context.AppendVertex(polygon.organFlags, positionAverage, normalAverage);
             for (int i = 0; i < points.Count; ++i)
             {
                 int last = head + (i - 1 + points.Count) % points.Count;
                 int current = head + (i) % points.Count;
                 int center = head + points.Count;
-                context.AppendIndex(GenerationContext.MeshTag.Leaf, last);
-                context.AppendIndex(GenerationContext.MeshTag.Leaf, center);
-                context.AppendIndex(GenerationContext.MeshTag.Leaf, current);
-                context.AppendIndex(GenerationContext.MeshTag.Leaf, current);
-                context.AppendIndex(GenerationContext.MeshTag.Leaf, center);
-                context.AppendIndex(GenerationContext.MeshTag.Leaf, last);
+                context.AppendIndex(polygon.organFlags, last);
+                context.AppendIndex(polygon.organFlags, center);
+                context.AppendIndex(polygon.organFlags, current);
+                context.AppendIndex(polygon.organFlags, current);
+                context.AppendIndex(polygon.organFlags, center);
+                context.AppendIndex(polygon.organFlags, last);
             }
         }
     }
