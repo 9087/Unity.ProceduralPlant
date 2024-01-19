@@ -5,13 +5,13 @@ using ProceduralPlant.Core;
 using UnityEngine;
 using UnityEngine.Pool;
 using UnityEngine.Rendering;
+using UnityEngine.Serialization;
 using Object = UnityEngine.Object;
 
 namespace ProceduralPlant
 {
     [DisallowMultipleComponent]
     [ExecuteAlways]
-    [RequireComponent(typeof(MeshRenderer))]
     public class Plant : MonoBehaviour
     {
         [SerializeField] private string m_LindenmayerSystemDescription = "F;F->FF-[-F+F+F]+[+F-F-F];";
@@ -58,7 +58,8 @@ namespace ProceduralPlant
             }
         }
 
-        public List<MeshFilter> meshFilters = new();
+        [SerializeField] private Material m_BranchMaterial;
+        [SerializeField] private Material m_LeafMaterial;
 
         public LindenmayerSystem lindenmayerSystem { get; private set; } = null;
 
@@ -105,21 +106,27 @@ namespace ProceduralPlant
             }
         }
 
-        private void CreatePlant(string name, GenerationContext.MeshInfo meshInfo)
+        private void CreatePlant(string name, OrganFlags flags, GenerationContext.MeshInfo meshInfo)
         {
-            MeshFilter meshFilter_ = null;
             GameObject sub = new GameObject($"Procedural Plant Mesh {name}");
             sub.hideFlags = HideFlags.HideAndDontSave;
             sub.transform.parent = this.transform;
-            sub.AddComponent<MeshRenderer>().sharedMaterials = this.meshRenderer.sharedMaterials;
-            meshFilter_ = sub.AddComponent<MeshFilter>();
+            MeshFilter meshFilter_ = sub.AddComponent<MeshFilter>();
+            MeshRenderer meshRenderer_ = sub.AddComponent<MeshRenderer>();
+            if (flags.HasFlag(OrganFlags.Branch))
+            {
+                meshRenderer_.sharedMaterial = m_BranchMaterial;
+            }
+            else if (flags.HasFlag(OrganFlags.Leaf))
+            {
+                meshRenderer_.sharedMaterial = m_LeafMaterial;
+            }
             var mesh = new Mesh();
             mesh.name = $"Procedural Plant Mesh {name}";
             mesh.vertices = meshInfo.vertices.ToArray();
             mesh.SetIndices(meshInfo.indices.ToArray(), MeshTopology.Triangles, 0);
             mesh.normals = meshInfo.normals.ToArray();
             meshFilter_.mesh = mesh;
-            meshFilters.Add(meshFilter_);
         }
         
         public void Refresh()
@@ -149,13 +156,12 @@ namespace ProceduralPlant
                 Object.DestroyImmediate(childTransform.gameObject);
             }
 
-            meshFilters.Clear();
             foreach (var (flags, list) in meshInfoData)
             {
                 int index = 0;
                 foreach (var meshInfo in list)
                 {
-                    CreatePlant($"Plant {flags} {index}", meshInfo);
+                    CreatePlant($"Plant {flags} {index}", flags, meshInfo);
                     index++;
                 }
             }

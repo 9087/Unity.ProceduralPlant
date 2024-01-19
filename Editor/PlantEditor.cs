@@ -12,16 +12,20 @@ namespace ProceduralPlant.Editor
         private SerializedProperty lindenmayerSystemDescriptionProperty;
         private SerializedProperty iterationCountProperty;
         private SerializedProperty parametersInfoProperty;
+        private SerializedProperty branchMaterialProperty;
+        private SerializedProperty leafMaterialProperty;
 
         private Rect templateDropdownButtonRect;
         private static bool parameterInfoFoldout = true;
-        private static bool meshFilterListFoldout = false;
+        private static bool materialListFoldout = false;
         
         private void OnEnable()
         {
             lindenmayerSystemDescriptionProperty = this.serializedObject.FindProperty("m_LindenmayerSystemDescription");
             iterationCountProperty = this.serializedObject.FindProperty("m_IterationCount");
             parametersInfoProperty = this.serializedObject.FindProperty("m_ParametersInfo");
+            branchMaterialProperty = this.serializedObject.FindProperty("m_BranchMaterial");
+            leafMaterialProperty = this.serializedObject.FindProperty("m_LeafMaterial");
         }
 
         public override void OnInspectorGUI()
@@ -112,6 +116,10 @@ namespace ProceduralPlant.Editor
                 {
                     do
                     {
+                        if (!childProperty.propertyPath.StartsWith(parametersInfoProperty.propertyPath))
+                        {
+                            break;
+                        }
                         EditorGUILayout.PropertyField(childProperty);
                     }
                     while (childProperty.Next(false));
@@ -133,27 +141,27 @@ namespace ProceduralPlant.Editor
 
             #endregion
 
+            #region Material List
+
+            materialListFoldout = EditorGUILayout.Foldout(materialListFoldout, new GUIContent("Materials"));
+            if (materialListFoldout)
+            {
+                EditorGUI.BeginChangeCheck();
+                EditorGUI.indentLevel += 1;
+                EditorGUILayout.PropertyField(branchMaterialProperty);
+                EditorGUILayout.PropertyField(leafMaterialProperty);
+                EditorGUI.indentLevel -= 1;
+                dirty |= EditorGUI.EndChangeCheck();
+            }
+
+            #endregion
+            
             if (dirty || plantController.lindenmayerSystem == null)
             {
                 this.serializedObject.ApplyModifiedProperties();
                 plantController.Refresh();
             }
-
-            #region MeshFilter List
             
-            meshFilterListFoldout = EditorGUILayout.Foldout(meshFilterListFoldout, new GUIContent("MeshFilter List"));
-            if (meshFilterListFoldout)
-            {
-                EditorGUI.indentLevel += 1;
-                for (int i = 0; i < plantController.meshFilters.Count; i++)
-                {
-                    var meshFilter = plantController.meshFilters[i];
-                    EditorGUILayout.ObjectField(meshFilter, typeof(MeshFilter));
-                }
-                EditorGUI.indentLevel -= 1;
-            }
-
-            #endregion
 
             if (plantController.lindenmayerSystem == null)
             {
