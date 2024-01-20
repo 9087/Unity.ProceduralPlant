@@ -1,18 +1,66 @@
 
 
+using System;
 using UnityEngine;
 
 namespace ProceduralPlant.Core
 {
-    public class Line
+    public struct Line
     {
         public readonly Point start;
         public readonly Point end;
+
+        private bool _none;
+
+        public static Line none { get; } = new Line(true);
+
+        private Line(bool none)
+        {
+            this.start = Point.empty;
+            this.end = Point.empty;
+            this._none = none;
+        }
 
         public Line(Point start, Point end)
         {
             this.start = start;
             this.end = end;
+            this._none = false;
+        }
+
+        public static bool operator ==(Line a, Line b)
+        {
+            if (a._none != b._none)
+            {
+                return false;
+            }
+            if (a._none)
+            {
+                return true;
+            }
+            return
+                a.start == b.start &&
+                a.end == b.end;
+        }
+
+        public static bool operator !=(Line a, Line b)
+        {
+            return !(a == b);
+        }
+        
+        public bool Equals(Line other)
+        {
+            return start.Equals(other.start) && end.Equals(other.end) && _none == other._none;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Line other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(start, end, _none);
         }
 
         private static Vector3 BezierPosition(float t, Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3)

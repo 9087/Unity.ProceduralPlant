@@ -18,7 +18,8 @@ namespace ProceduralPlant.Symbols
     {
         private static void GeneratePipe(GenerationContext context, int sideCount, Line line, OrganFlags organFlags)
         {
-            context.Prepare(organFlags, sideCount * 2);
+            var buffer = context.buffer;
+            var meshInfo = buffer.Prepare(organFlags, sideCount * 2);
             
             var sAxis = line.start.rotation * Vector3.forward;
             var eAxis = line.end.rotation * Vector3.forward;
@@ -34,20 +35,20 @@ namespace ProceduralPlant.Symbols
 
             var stepAngle = 360.0f / sideCount;
 
-            var head = context.GetCurrentIndex(organFlags);
+            var head = meshInfo.GetVertexCount();
             int eIndex = 0;
             float minSqrDistance = float.MaxValue;
             for (int i = 0; i < sideCount; i++)
             {
                 var sVertex = (Quaternion.AngleAxis(i * stepAngle, sAxis) * sFirstSide).normalized * sRadius + sPosition;
                 var sNormal = (Quaternion.AngleAxis((i - 0.5f) * stepAngle, sAxis) * sFirstSide).normalized;
-                context.AppendVertex(organFlags, sVertex, sNormal);
+                meshInfo.AppendVertex(sVertex, sNormal);
                 
                 var eVertex = (Quaternion.AngleAxis(i * stepAngle, eAxis) * eFirstSide).normalized * eRadius + ePosition;
                 var eNormal = (Quaternion.AngleAxis((i - 0.5f) * stepAngle, eAxis) * eFirstSide).normalized;
-                context.AppendVertex(organFlags, eVertex, eNormal);
+                meshInfo.AppendVertex(eVertex, eNormal);
 
-                float sqrDistance = (context.GetVertexPosition(organFlags, head) - eVertex).sqrMagnitude;
+                float sqrDistance = (meshInfo.GetVertexPosition(head) - eVertex).sqrMagnitude;
                 if (sqrDistance < minSqrDistance)
                 {
                     minSqrDistance = sqrDistance;
@@ -57,21 +58,23 @@ namespace ProceduralPlant.Symbols
 
             for (int i = 0; i < sideCount; i++)
             {
-                context.AppendIndex(organFlags, head + (2 * i + 0) % (2 * sideCount));
-                context.AppendIndex(organFlags, head + (2 * i + 2) % (2 * sideCount));
-                context.AppendIndex(organFlags, head + (2 * (i + eIndex) + 1) % (2 * sideCount));
-                
-                context.AppendIndex(organFlags, head + (2 * (i + eIndex) + 1) % (2 * sideCount));
-                context.AppendIndex(organFlags, head + (2 * i + 2) % (2 * sideCount));
-                context.AppendIndex(organFlags, head + (2 * (i + eIndex) + 3) % (2 * sideCount));
+                meshInfo.AppendTriangle(
+                    head + (2 * i + 0) % (2 * sideCount),
+                    head + (2 * i + 2) % (2 * sideCount),
+                    head + (2 * (i + eIndex) + 1) % (2 * sideCount));
+
+                meshInfo.AppendTriangle(
+                    head + (2 * (i + eIndex) + 1) % (2 * sideCount),
+                    head + (2 * i + 2) % (2 * sideCount),
+                    head + (2 * (i + eIndex) + 3) % (2 * sideCount));
             }
         }
         
         public override void Generate(GenerationContext context, LindenmayerSystem lindenmayerSystem, Symbol symbol)
         {
-            var old = context.CreateBranch();
+            using var old = context.Clone();
             context.MoveForwardWithLine(lindenmayerSystem.parametersInfo.length);
-            if (old.last == null)
+            if (old.last == Line.none)
             {
                 GeneratePipe(context, lindenmayerSystem.parametersInfo.sideCount, context.last, symbol.organFlags);
             }

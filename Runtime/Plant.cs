@@ -85,8 +85,10 @@ namespace ProceduralPlant
                         }
                         break;
                     case Branch branch:
-                        var branchContext = context.CreateBranch(); 
-                        Generate(branchContext, branch.content);
+                        using (var branchContext = context.Clone())
+                        {
+                            Generate(branchContext, branch.content);
+                        }
                         break;
                     case Polygon polygon:
                         var points = ListPool<Point>.Get();
@@ -107,7 +109,7 @@ namespace ProceduralPlant
             }
         }
 
-        private void CreatePlant(string name, OrganFlags flags, GenerationContext.MeshInfo meshInfo)
+        private void CreatePlant(string name, OrganFlags flags, MeshInfo meshInfo)
         {
             GameObject sub = new GameObject($"Procedural Plant Mesh {name}");
             sub.hideFlags = HideFlags.HideAndDontSave;
@@ -156,7 +158,7 @@ namespace ProceduralPlant
                 Object.DestroyImmediate(childTransform.gameObject);
             }
 
-            foreach (var (flags, list) in context.meshInfoData)
+            foreach (var (flags, list) in context.buffer.data)
             {
                 int index = 0;
                 foreach (var meshInfo in list)
