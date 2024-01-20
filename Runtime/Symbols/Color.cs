@@ -6,10 +6,15 @@ namespace ProceduralPlant.Symbols
     [Symbol("'")]
     public class ColorIncrease : Descriptor
     {
-        public override GenerationContext Generate(LindenmayerSystem lindenmayerSystem, GenerationContext context, Symbol symbol)
+        public static bool WarningRaised = false; 
+        
+        public override void Generate(GenerationContext context, LindenmayerSystem lindenmayerSystem, Symbol symbol)
         {
-            Debug.LogWarning("Descriptor `ColorIncrease(')` is not implemented!");
-            return context;
+            if (!WarningRaised)
+            {
+                Debug.LogWarning("Descriptor `ColorIncrease(')` is not implemented!");
+                WarningRaised = true;
+            }
         }
     }
 }

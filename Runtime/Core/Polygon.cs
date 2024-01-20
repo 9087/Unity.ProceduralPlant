@@ -24,7 +24,7 @@ namespace ProceduralPlant.Core
             return $"{{{content}}}" + next;
         }
 
-        public static void Generate(LindenmayerSystem lindenmayerSystem, GenerationContext context, Polygon polygon, List<GenerationContext.Point> points)
+        public static void Generate(GenerationContext context, LindenmayerSystem lindenmayerSystem, Polygon polygon, List<Point> points)
         {
             points.RemoveAt(points.Count - 1);
             context.Prepare(polygon.organFlags, points.Count + 1);
@@ -38,9 +38,9 @@ namespace ProceduralPlant.Core
             var head = context.GetCurrentIndex(polygon.organFlags);
             for (int i = 0; i < points.Count; ++i)
             {
-                GenerationContext.Point last = points[(i - 1 + points.Count) % points.Count];
-                GenerationContext.Point next = points[(i + 1) % points.Count];
-                GenerationContext.Point current = points[i];
+                Point last = points[(i - 1 + points.Count) % points.Count];
+                Point next = points[(i + 1) % points.Count];
+                Point current = points[i];
                 var normal = Vector3.Cross(last.position - current.position, next.position - current.position);
                 context.AppendVertex(polygon.organFlags, current.position, normal);
                 normalAverage += normal;

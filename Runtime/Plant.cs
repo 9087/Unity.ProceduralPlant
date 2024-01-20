@@ -81,23 +81,24 @@ namespace ProceduralPlant
                     case Symbol symbol:
                         if (symbol.descriptor != null)
                         {
-                            context = symbol.descriptor.Generate(this.lindenmayerSystem, context, symbol);
+                            symbol.descriptor.Generate(context, this.lindenmayerSystem, symbol);
                         }
                         break;
                     case Branch branch:
-                        Generate(context, branch.content);
+                        var branchContext = context.CreateBranch(); 
+                        Generate(branchContext, branch.content);
                         break;
                     case Polygon polygon:
-                        var points = ListPool<GenerationContext.Point>.Get();
-                        void OnPointArrived(GenerationContext.Point point)
+                        var points = ListPool<Point>.Get();
+                        void OnPointArrived(Point point)
                         {
                             points.Add(point);
                         }
                         context.onPointArrived += OnPointArrived;
                         Generate(context, polygon.content);
                         context.onPointArrived -= OnPointArrived;
-                        Polygon.Generate(this.lindenmayerSystem, context, polygon, points);
-                        ListPool<GenerationContext.Point>.Release(points);
+                        Polygon.Generate(context, this.lindenmayerSystem, polygon, points);
+                        ListPool<Point>.Release(points);
                         break;
                     default:
                         throw new NotImplementedException(node.ToString());
@@ -147,8 +148,7 @@ namespace ProceduralPlant
             }
             lindenmayerSystem.MarkOrganFlags();
 
-            var meshInfoData = DictionaryPool<OrganFlags, List<GenerationContext.MeshInfo>>.Get(); 
-            var context = new GenerationContext(this.transform, meshInfoData);
+            var context = new GenerationContext();
             Generate(context, lindenmayerSystem.current);
 
             foreach (Transform childTransform in this.transform)
@@ -156,7 +156,7 @@ namespace ProceduralPlant
                 Object.DestroyImmediate(childTransform.gameObject);
             }
 
-            foreach (var (flags, list) in meshInfoData)
+            foreach (var (flags, list) in context.meshInfoData)
             {
                 int index = 0;
                 foreach (var meshInfo in list)
@@ -165,7 +165,6 @@ namespace ProceduralPlant
                     index++;
                 }
             }
-            DictionaryPool<OrganFlags, List<GenerationContext.MeshInfo>>.Release(meshInfoData);
         }
     }
 }

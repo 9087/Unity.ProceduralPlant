@@ -7,16 +7,16 @@ namespace ProceduralPlant.Symbols
     [Symbol("f")]
     public class MoveForwardWithoutLine : Descriptor
     {
-        public override GenerationContext Generate(LindenmayerSystem lindenmayerSystem, GenerationContext context, Symbol symbol)
+        public override void Generate(GenerationContext context, LindenmayerSystem lindenmayerSystem, Symbol symbol)
         {
-            return context.MoveForwardWithoutLine(lindenmayerSystem.parametersInfo.length);
+            context.MoveForwardWithoutLine(lindenmayerSystem.parametersInfo.length);
         }
     }
     
     [Symbol("F")]
     public class MoveForwardWithLine : MoveForwardWithoutLine
     {
-        private static void GeneratePipe(GenerationContext context, int sideCount, GenerationContext.Line line, OrganFlags organFlags)
+        private static void GeneratePipe(GenerationContext context, int sideCount, Line line, OrganFlags organFlags)
         {
             context.Prepare(organFlags, sideCount * 2);
             
@@ -67,10 +67,10 @@ namespace ProceduralPlant.Symbols
             }
         }
         
-        public override GenerationContext Generate(LindenmayerSystem lindenmayerSystem, GenerationContext context, Symbol symbol)
+        public override void Generate(GenerationContext context, LindenmayerSystem lindenmayerSystem, Symbol symbol)
         {
-            var old = context;
-            context = context.MoveForwardWithLine(lindenmayerSystem.parametersInfo.length);
+            var old = context.CreateBranch();
+            context.MoveForwardWithLine(lindenmayerSystem.parametersInfo.length);
             if (old.last == null)
             {
                 GeneratePipe(context, lindenmayerSystem.parametersInfo.sideCount, context.last, symbol.organFlags);
@@ -82,7 +82,7 @@ namespace ProceduralPlant.Symbols
                 GeneratePipe(context, lindenmayerSystem.parametersInfo.sideCount, line, symbol.organFlags);
                 var from = old.last.Sample(1 - curveSize);
                 var to = line.start;
-                var curve = new GenerationContext.Line(from, to);
+                var curve = new Line(from, to);
                 int segmentCount = 1;
                 float segment = 1.0f / segmentCount;
                 for (int i = 0; i < segmentCount; i++)
@@ -91,7 +91,6 @@ namespace ProceduralPlant.Symbols
                     GeneratePipe(context, lindenmayerSystem.parametersInfo.sideCount, s, symbol.organFlags);
                 }
             }
-            return context;
         }
     }
 }
