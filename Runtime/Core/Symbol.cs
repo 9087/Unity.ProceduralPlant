@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using UnityEngine;
 
 namespace ProceduralPlant.Core
 {
@@ -45,6 +46,7 @@ namespace ProceduralPlant.Core
                     }
                     var descriptor = Activator.CreateInstance(type) as Descriptor;
                     descriptor!.name = symbolAttribute.name;
+                    Debug.Assert(descriptor.name != "#");
                     descriptors.Add(symbolAttribute.name, descriptor);
                 }
             }

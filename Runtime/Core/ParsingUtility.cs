@@ -21,6 +21,21 @@ namespace ProceduralPlant.Core
             return true;
         }
 
+        private static bool Identifier(CompilationContext context, out string identifier)
+        {
+            identifier = null;
+            using var transaction = context.CreateTransaction();
+            if (!Letter(context, out var _)) return false;
+            while (true)
+            {
+                if (Digit(context, out var _)) continue;
+                if (Letter(context, out var _)) continue;
+                break;
+            }
+            identifier = transaction.Finish();
+            return true;
+        }
+
         private static bool Blank(CompilationContext context)
         {
             bool matched = false;
@@ -64,9 +79,21 @@ namespace ProceduralPlant.Core
             {
                 return true;
             }
+            else if (context.current == '#')
+            {
+                using var transaction = context.CreateTransaction();
+                context.Step();
+                if (Identifier(context, out var identifier))
+                {
+                    symbol = new Symbol(identifier);
+                    transaction.Finish();
+                    return true;
+                }
+                return false;
+            }
             else if (Letter(context, out var letter))
             {
-                symbol = new Symbol(new StringBuilder().Append(letter).ToString());
+                symbol = new Symbol(letter.ToString());
                 return true;
             }
             else
@@ -154,8 +181,7 @@ namespace ProceduralPlant.Core
             return Structure(context, out axiom) && Semicolon(context);
         }
 
-        public static bool Production(CompilationContext context, out Symbol symbol,
-            out Node structure)
+        public static bool Production(CompilationContext context, out Symbol symbol, out Node structure, StringBuilder error)
         {
             using var transaction = context.CreateTransaction();
             symbol = null;

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using ProceduralPlant.Core;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -139,7 +140,9 @@ namespace ProceduralPlant
                 var child = this.transform.GetChild(i) as Transform;
                 Object.DestroyImmediate(child!.gameObject);
             }
-            lindenmayerSystem = LindenmayerSystem.Compile(lindenmayerSystemDescription, this.m_ParametersInfo);
+
+            var error = new StringBuilder();
+            lindenmayerSystem = LindenmayerSystem.Compile(lindenmayerSystemDescription, this.m_ParametersInfo, error);
             if (lindenmayerSystem == null)
             {
                 return;

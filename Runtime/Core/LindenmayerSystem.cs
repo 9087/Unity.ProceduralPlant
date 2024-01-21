@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using ProceduralPlant.Symbols;
 using UnityEditor;
 using UnityEngine;
@@ -16,7 +17,7 @@ namespace ProceduralPlant.Core
 
         public Node current { get; private set; } = null;
         
-        public static LindenmayerSystem Compile(string text, ParametersInfo parametersInfo)
+        public static LindenmayerSystem Compile(string text, ParametersInfo parametersInfo, StringBuilder error)
         {
             var lindenmayerSystem = new LindenmayerSystem();
             var context = new CompilationContext(text);
@@ -27,7 +28,7 @@ namespace ProceduralPlant.Core
             }
             lindenmayerSystem.axiom = axiom;
 
-            while (ParsingUtility.Production(context, out var symbol, out var structure))
+            while (ParsingUtility.Production(context, out var symbol, out var structure, error))
             {
                 lindenmayerSystem.productions[symbol.name] = structure;
             }

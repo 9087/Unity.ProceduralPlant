@@ -8,7 +8,7 @@ namespace ProceduralPlant.Core
 
         public char current => finished ? char.MinValue : text[index];
 
-        private int index = 0;
+        public int index { get; private set; } = 0;
 
         public bool finished => index >= text.Length;
             
@@ -41,9 +41,11 @@ namespace ProceduralPlant.Core
                 this.context.index = this.index;
             }
 
-            public void Finish()
+            public string Finish()
             {
+                string text = this.context.text.Substring(index, this.context.index - index);
                 this.context = null;
+                return text;
             }
         }
 
