@@ -5,12 +5,12 @@ using UnityEngine;
 
 namespace ProceduralPlant.Core
 {
-    public struct Line
+    public readonly struct Line
     {
         public readonly Point start;
         public readonly Point end;
 
-        private bool _none;
+        private readonly bool _none;
 
         public static Line none { get; } = new Line(true);
 
@@ -95,8 +95,8 @@ namespace ProceduralPlant.Core
             var diameter = start.diameter + progress * (end.diameter - start.diameter);
             var p0 = start.position;
             var p3 = end.position;
-            var p1 = (start.rotation * Vector3.forward).normalized + p0;
-            var p2 = (end.rotation * Vector3.back).normalized + p3;
+            var p1 = (start.rotation * Vector3.forward) + p0;
+            var p2 = (end.rotation * Vector3.back) + p3;
             var position = BezierPosition(progress, p0, p1, p2, p3);
             var rotation = Quaternion.Lerp(start.rotation, end.rotation, progress);
             return new()

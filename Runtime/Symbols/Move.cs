@@ -24,11 +24,11 @@ namespace ProceduralPlant.Symbols
             var sAxis = line.start.rotation * Vector3.forward;
             var eAxis = line.end.rotation * Vector3.forward;
             
-            var sFirstSide = line.start.rotation * Vector3.up;
-            var eFirstSide = line.end.rotation * Vector3.up;
-            
             var sPosition = line.start.position;
             var sRadius = line.start.diameter * 0.5f;
+            
+            var sFirstSide = (line.start.rotation * Vector3.up).normalized;
+            var eFirstSide = (line.end.rotation * Vector3.up).normalized;
             
             var ePosition = line.end.position;
             var eRadius = line.end.diameter * 0.5f;
@@ -36,19 +36,23 @@ namespace ProceduralPlant.Symbols
             var stepAngle = 360.0f / sideCount;
 
             var head = meshInfo.GetVertexCount();
+            Vector3 headVertexPosition = Vector3.zero;
             int eIndex = 0;
             float minSqrDistance = float.MaxValue;
             for (int i = 0; i < sideCount; i++)
             {
-                var sVertex = (Quaternion.AngleAxis(i * stepAngle, sAxis) * sFirstSide).normalized * sRadius + sPosition;
-                var sNormal = (Quaternion.AngleAxis((i - 0.5f) * stepAngle, sAxis) * sFirstSide).normalized;
+                var sVertex = Quaternion.AngleAxis(i * stepAngle, sAxis) * sFirstSide * sRadius + sPosition;
+                var sNormal = Quaternion.AngleAxis((i - 0.5f) * stepAngle, sAxis) * sFirstSide;
                 meshInfo.AppendVertex(sVertex, sNormal);
-                
-                var eVertex = (Quaternion.AngleAxis(i * stepAngle, eAxis) * eFirstSide).normalized * eRadius + ePosition;
-                var eNormal = (Quaternion.AngleAxis((i - 0.5f) * stepAngle, eAxis) * eFirstSide).normalized;
+                if (i == 0)
+                {
+                    headVertexPosition = sVertex;
+                }
+                var eVertex = Quaternion.AngleAxis(i * stepAngle, eAxis) * eFirstSide * eRadius + ePosition;
+                var eNormal = Quaternion.AngleAxis((i - 0.5f) * stepAngle, eAxis) * eFirstSide;
                 meshInfo.AppendVertex(eVertex, eNormal);
 
-                float sqrDistance = (meshInfo.GetVertexPosition(head) - eVertex).sqrMagnitude;
+                float sqrDistance = (headVertexPosition - eVertex).sqrMagnitude;
                 if (sqrDistance < minSqrDistance)
                 {
                     minSqrDistance = sqrDistance;
