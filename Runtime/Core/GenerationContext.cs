@@ -7,7 +7,7 @@ namespace ProceduralPlant.Core
 {
     public class GenerationContext : IDisposable
     {
-        private static readonly ObjectPool<GenerationContext> pool = new(() => new GenerationContext(), OnGet);
+        private static readonly ObjectPool<GenerationContext> pool = new(() => new GenerationContext(null), OnGet);
 
         private static void OnGet(GenerationContext context)
         {
@@ -34,12 +34,16 @@ namespace ProceduralPlant.Core
         
         public Line last { get; private set; } = Line.none;
 
-        public GenerationContext() : this(null)
+        public GenerationContext(ParametersInfo parametersInfo) : this(parametersInfo, null)
         {
         }
 
-        private GenerationContext(MeshBuffer meshBuffer)
+        private GenerationContext(ParametersInfo parametersInfo, MeshBuffer meshBuffer)
         {
+            if (parametersInfo != null)
+            {
+                this.current = current.Thin(1 - parametersInfo.initialDiameter);
+            }
             this.buffer = meshBuffer ?? new();
         }
 

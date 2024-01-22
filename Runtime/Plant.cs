@@ -114,7 +114,7 @@ namespace ProceduralPlant
         {
             GameObject sub = new GameObject($"Procedural Plant Mesh {name}");
             sub.hideFlags = HideFlags.HideAndDontSave;
-            sub.transform.parent = this.transform;
+            sub.transform.SetParent(this.transform, false);
             MeshFilter meshFilter_ = sub.AddComponent<MeshFilter>();
             MeshRenderer meshRenderer_ = sub.AddComponent<MeshRenderer>();
             if (flags.HasFlag(OrganFlags.Branch))
@@ -153,7 +153,7 @@ namespace ProceduralPlant
             }
             lindenmayerSystem.MarkOrganFlags();
 
-            var context = new GenerationContext();
+            var context = new GenerationContext(this.m_ParametersInfo);
             Generate(context, lindenmayerSystem.current);
 
             foreach (Transform childTransform in this.transform)
