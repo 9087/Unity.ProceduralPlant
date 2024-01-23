@@ -53,11 +53,15 @@ S->FL;
 L->['''^^{-f+f+f-|-f+f+f}];
 ```
 
+**Flower field with stochastic application of productions**
+
+![Figure 1.28 Flower field](Documentation/figure.1.28.flowerfield.png)
+
 ## TODO
 
 - [x] Generate leaf mesh
 - [ ] Optimize vertex and triangle count
 - [ ] Optimize generation efficiency
 - [x] Use different materials on different parts
-- [ ] Stochastic application of productions
+- [x] Stochastic application of productions
 - [ ] Timed Lindenmayer systems

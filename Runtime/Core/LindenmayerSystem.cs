@@ -13,7 +13,7 @@ namespace ProceduralPlant.Core
         
         private Node axiom = null;
         
-        private readonly Dictionary<string, Node> productions = new();
+        private readonly Dictionary<string, List<Production>> productions = new();
 
         public Node current { get; private set; } = null;
         
@@ -28,13 +28,32 @@ namespace ProceduralPlant.Core
             }
             lindenmayerSystem.axiom = axiom;
 
-            while (ParsingUtility.Production(context, out var symbol, out var structure, error))
+            while (ParsingUtility.Production(context, out var symbol, out var structure, out float probability, error))
             {
-                lindenmayerSystem.productions[symbol.name] = structure;
+                if (!lindenmayerSystem.productions.TryGetValue(symbol.name, out var list))
+                {
+                    lindenmayerSystem.productions.Add(symbol.name, list = new());
+                }
+                list.Add(new Production(structure, probability));
             }
             if (!context.finished)
             {
+                error?.Append("\nCompilation interrupted by error.");
                 return null;
+            }
+
+            foreach (var (name, list) in lindenmayerSystem.productions)
+            {
+                float sum = 0;
+                foreach (var production in list)
+                {
+                    sum += production.probability;
+                }
+                if (!Mathf.Approximately(sum, 1))
+                {
+                    error.Append($"\nSum of {name}'s probabilities must be 1.");
+                    return null;
+                }
             }
 
             lindenmayerSystem.current = lindenmayerSystem.axiom.Clone();
@@ -52,9 +71,28 @@ namespace ProceduralPlant.Core
             switch (node)
             {
                 case Symbol symbol:
-                    if (this.productions.TryGetValue(symbol.name, out var production))
+                    if (this.productions.TryGetValue(symbol.name, out var list))
                     {
-                        node = production.Clone();
+                        Node structure = null;
+                        if (list.Count == 1)
+                        {
+                            structure = list[0].structure;
+                        }
+                        else
+                        {
+                            float randomValue = Random.Range(0.0f, 1.0f);
+                            foreach (var production in list)
+                            {
+                                randomValue -= production.probability;
+                                if (randomValue <= 0)
+                                {
+                                    structure = production.structure;
+                                    break;
+                                }
+                            }
+                            structure ??= list[^1].structure;
+                        }
+                        node = structure.Clone();
                         node.last.next = Simulate(old.next);
                     }
                     else
@@ -76,6 +114,7 @@ namespace ProceduralPlant.Core
 
         public LindenmayerSystem Simulate()
         {
+            Random.InitState(parametersInfo.randomSeed);
             this.current = Simulate(this.current);
             return this;
         }

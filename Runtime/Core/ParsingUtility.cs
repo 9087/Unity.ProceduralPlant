@@ -36,6 +36,26 @@ namespace ProceduralPlant.Core
             return true;
         }
 
+        private static bool Decimal(CompilationContext context, out float value)
+        {
+            value = 0;
+            using var transaction = context.CreateTransaction();
+            if (!Digit(context, out char first)) return false;
+            if (first != '0')
+            {
+                while (Digit(context, out char _)) {}
+            }
+            if (context.current != '.')
+            {
+                value = float.Parse(transaction.Finish());
+                return true;
+            }
+            context.Step();
+            while (Digit(context, out char _)) {}
+            value = float.Parse(transaction.Finish());
+            return true;
+        }
+
         private static bool Blank(CompilationContext context)
         {
             bool matched = false;
@@ -181,16 +201,18 @@ namespace ProceduralPlant.Core
             return Structure(context, out axiom) && Semicolon(context);
         }
 
-        public static bool Production(CompilationContext context, out Symbol symbol, out Node structure, StringBuilder error)
+        public static bool Production(CompilationContext context, out Symbol symbol, out Node structure, out float probability, StringBuilder error)
         {
             using var transaction = context.CreateTransaction();
             symbol = null;
             structure = null;
+            probability = 0;
             Blank(context);
             if (!Symbol(context, out symbol)) return false;
             Blank(context);
             if (context.current != '-') return false;
             context.Step();
+            probability = Decimal(context, out float probability_) ? probability_ : 1.0f;
             if (context.current != '>') return false;
             context.Step();
             Blank(context);

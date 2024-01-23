@@ -133,7 +133,7 @@ namespace ProceduralPlant
             meshFilter_.mesh = mesh;
         }
         
-        public void Refresh()
+        public void Refresh(StringBuilder error = null)
         {
             for (int i = this.transform.childCount - 1; i >= 0; --i)
             {
@@ -141,7 +141,6 @@ namespace ProceduralPlant
                 Object.DestroyImmediate(child!.gameObject);
             }
 
-            var error = new StringBuilder();
             lindenmayerSystem = LindenmayerSystem.Compile(lindenmayerSystemDescription, this.m_ParametersInfo, error);
             if (lindenmayerSystem == null)
             {
