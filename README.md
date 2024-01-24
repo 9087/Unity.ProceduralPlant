@@ -12,9 +12,9 @@ git@github.com:9087/Unity.ProceduralPlant.git
 
 2. Create an empty GameObject.
 
-3. Add the `Plant` component to the empty GameObject. (The MeshFilter and MeshRenderer will be automatically required.)
+3. Add the `Plant` component to the empty GameObject.
 
-4. Set an available material (e.g. `Default-Material`) to the MeshRenderer.
+4. Set available materials (e.g. `Default-Material`).
 
 5. Click the `Templates` button to select a default "plant", or try adjusting properties on the `Plant` to create various types of plants!
 
