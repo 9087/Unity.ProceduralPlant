@@ -99,13 +99,15 @@ namespace ProceduralPlant.Core
             {
                 return true;
             }
-            else if (context.current == '#')
+            else if (context.current == '(')
             {
                 using var transaction = context.CreateTransaction();
                 context.Step();
                 if (Identifier(context, out var identifier))
                 {
                     symbol = new Symbol(identifier);
+                    if (context.current != ')') return false;
+                    context.Step();
                     transaction.Finish();
                     return true;
                 }
@@ -208,7 +210,8 @@ namespace ProceduralPlant.Core
             structure = null;
             probability = 0;
             Blank(context);
-            if (!Symbol(context, out symbol)) return false;
+            if (!Identifier(context, out var identifier)) return false;
+            symbol = new Symbol(identifier);
             Blank(context);
             if (context.current != '-') return false;
             context.Step();
