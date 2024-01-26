@@ -59,7 +59,10 @@ namespace ProceduralPlant.Core
         private static bool Blank(CompilationContext context)
         {
             bool matched = false;
-            while (context.current == ' ')
+            while (context.current == ' ' ||
+                   context.current == '\t' ||
+                   context.current == '\n' ||
+                   context.current == '\r')
             {
                 matched = true;
                 context.Step();

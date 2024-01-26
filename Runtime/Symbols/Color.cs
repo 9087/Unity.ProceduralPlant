@@ -8,7 +8,7 @@ namespace ProceduralPlant.Symbols
     {
         public static bool WarningRaised = false; 
         
-        public override void Generate(GenerationContext context, LindenmayerSystem lindenmayerSystem, Symbol symbol)
+        public override void Generate(Plant plant, GenerationContext context, Symbol symbol)
         {
             if (!WarningRaised)
             {

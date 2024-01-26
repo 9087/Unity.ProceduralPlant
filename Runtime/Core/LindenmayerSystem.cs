@@ -9,15 +9,13 @@ namespace ProceduralPlant.Core
 {
     public class LindenmayerSystem
     {
-        public ParametersInfo parametersInfo { get; private set; }
-        
         private Node axiom = null;
         
         private readonly Dictionary<string, List<Production>> productions = new();
 
         public Node current { get; private set; } = null;
         
-        public static LindenmayerSystem Compile(string text, ParametersInfo parametersInfo, StringBuilder error)
+        public static LindenmayerSystem Compile(string text, StringBuilder error)
         {
             var lindenmayerSystem = new LindenmayerSystem();
             var context = new CompilationContext(text);
@@ -57,7 +55,6 @@ namespace ProceduralPlant.Core
             }
 
             lindenmayerSystem.current = lindenmayerSystem.axiom.Clone();
-            lindenmayerSystem.parametersInfo = parametersInfo;
             return lindenmayerSystem;
         }
 
@@ -112,9 +109,9 @@ namespace ProceduralPlant.Core
             return node;
         }
 
-        public LindenmayerSystem Simulate()
+        public LindenmayerSystem Simulate(int randomSeed)
         {
-            Random.InitState(parametersInfo.randomSeed);
+            Random.InitState(randomSeed);
             this.current = Simulate(this.current);
             return this;
         }

@@ -4,19 +4,19 @@ Procedural Plant Implementation for Unity Based on "[The Algorithm Beauty of Pla
 
 ## Quick Start
 
-1. Add a package from the following git URL:
+1. Add the package from the following git URL:
 
 ```
 git@github.com:9087/Unity.ProceduralPlant.git
 ```
 
-2. Create an empty GameObject.
+2. Create a `Plant Species` asset from the `Create` menu.
 
-3. Add the `Plant` component to the empty GameObject.
+3. Set available materials on the asset (e.g. `Default-Material`).
 
-4. Set available materials (e.g. `Default-Material`).
+4. Create an empty GameObject. Add the `Plant` component to the empty GameObject.
 
-5. Click the `Templates` button to select a default "plant", or try adjusting properties on the `Plant` to create various types of plants!
+5. Drag the `Plant Species` asset into the `Plant` component's `Species` field and adjust properties on the `Plant Species` to create various types of plants!
 
 ## Examples
 

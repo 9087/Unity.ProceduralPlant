@@ -34,16 +34,14 @@ namespace ProceduralPlant.Core
         
         public Line last { get; private set; } = Line.none;
 
-        public GenerationContext(ParametersInfo parametersInfo) : this(parametersInfo, null)
+        public GenerationContext(PlantSpecies plantSpecies) : this(plantSpecies, null)
         {
         }
 
-        private GenerationContext(ParametersInfo parametersInfo, MeshBuffer meshBuffer)
+        private GenerationContext(PlantSpecies plantSpecies, MeshBuffer meshBuffer)
         {
-            if (parametersInfo != null)
-            {
-                this.current = current.Thin(1 - parametersInfo.initialDiameter);
-            }
+            if (plantSpecies != null)
+                this.current = current.Thin(1 - plantSpecies.initialDiameter);
             this.buffer = meshBuffer ?? new();
         }
 

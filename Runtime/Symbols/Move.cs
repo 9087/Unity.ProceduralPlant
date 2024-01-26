@@ -7,9 +7,9 @@ namespace ProceduralPlant.Symbols
     [Symbol("f")]
     public class MoveForwardWithoutLine : Descriptor
     {
-        public override void Generate(GenerationContext context, LindenmayerSystem lindenmayerSystem, Symbol symbol)
+        public override void Generate(Plant plant, GenerationContext context, Symbol symbol)
         {
-            context.MoveForwardWithoutLine(lindenmayerSystem.parametersInfo.length);
+            context.MoveForwardWithoutLine(plant.plantAsset.length);
         }
     }
     
@@ -74,19 +74,19 @@ namespace ProceduralPlant.Symbols
             }
         }
         
-        public override void Generate(GenerationContext context, LindenmayerSystem lindenmayerSystem, Symbol symbol)
+        public override void Generate(Plant plant, GenerationContext context, Symbol symbol)
         {
             using var old = context.Clone();
-            context.MoveForwardWithLine(lindenmayerSystem.parametersInfo.length);
+            context.MoveForwardWithLine(plant.plantAsset.length);
             if (old.last == Line.none)
             {
-                GeneratePipe(context, lindenmayerSystem.parametersInfo.sideCount, context.last, symbol.organFlags);
+                GeneratePipe(context, plant.sideCount, context.last, symbol.organFlags);
             }
             else
             {
                 float curveSize = 0.1f;
                 var line = context.last.Range(curveSize, symbol.organFlags.HasFlag(OrganFlags.Tip) ? 1 : (1 - curveSize));
-                GeneratePipe(context, lindenmayerSystem.parametersInfo.sideCount, line, symbol.organFlags);
+                GeneratePipe(context, plant.sideCount, line, symbol.organFlags);
                 var from = old.last.Sample(1 - curveSize);
                 var to = line.start;
                 var curve = new Line(from, to);
@@ -95,7 +95,7 @@ namespace ProceduralPlant.Symbols
                 for (int i = 0; i < segmentCount; i++)
                 {
                     var s = curve.Range(i * segment, (i + 1) * segment);
-                    GeneratePipe(context, lindenmayerSystem.parametersInfo.sideCount, s, symbol.organFlags);
+                    GeneratePipe(context, plant.sideCount, s, symbol.organFlags);
                 }
             }
         }

@@ -1,12 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using ProceduralPlant.Core;
 using UnityEngine;
 using UnityEngine.Pool;
-using UnityEngine.Rendering;
-using UnityEngine.Serialization;
 using Object = UnityEngine.Object;
 
 namespace ProceduralPlant
@@ -15,58 +11,27 @@ namespace ProceduralPlant
     [ExecuteAlways]
     public class Plant : MonoBehaviour
     {
-        [SerializeField] private string m_LindenmayerSystemDescription = "F;F->FF-[-F+F+F]+[+F-F-F];";
-
-        public string lindenmayerSystemDescription
-        {
-            get => m_LindenmayerSystemDescription;
-            set
-            {
-                if (m_LindenmayerSystemDescription == value)
-                {
-                    return;
-                }
-                m_LindenmayerSystemDescription = value;
-                this.Refresh();
-            }
-        }
-
-        [SerializeField] private int m_IterationCount = 3;
-
-        public int iterationCount
-        {
-            get => m_IterationCount;
-            set
-            {
-                if (value < 0 || m_IterationCount == value)
-                {
-                    return;
-                }
-                m_IterationCount = 0;
-                Refresh();
-            }
-        }
-
-        [SerializeField] private ParametersInfo m_ParametersInfo = new();
-
-        public ParametersInfo parametersInfo
-        {
-            get => m_ParametersInfo;
-            set
-            {
-                m_ParametersInfo = value;
-                this.Refresh();
-            }
-        }
-
-        [SerializeField] private Material m_BranchMaterial;
-        [SerializeField] private Material m_LeafMaterial;
-
-        public LindenmayerSystem lindenmayerSystem { get; private set; } = null;
-
-        public MeshRenderer meshRenderer => GetComponent<MeshRenderer>();
+        [SerializeField] protected PlantSpecies m_Species = null;
+        public PlantSpecies species => m_Species;
         
-        public MeshFilter meshFilter => GetComponent<MeshFilter>();
+        [SerializeField] protected int m_RandomSeed = 0;
+        
+        public enum QualityLevel
+        {
+            Fastest,
+            Fast,
+            Simple,
+            Good,
+            Beautiful,
+            Fantastic,
+        }
+        
+        [SerializeField] protected QualityLevel m_QualityLevel = QualityLevel.Beautiful;
+
+        internal PlantSpecies plantAsset => m_Species;
+        internal int sideCount => 3 * ((int)m_QualityLevel + 1);
+        
+        public LindenmayerSystem lindenmayerSystem { get; private set; } = null;
 
         private void Awake()
         {
@@ -82,7 +47,7 @@ namespace ProceduralPlant
                     case Symbol symbol:
                         if (symbol.descriptor != null)
                         {
-                            symbol.descriptor.Generate(context, this.lindenmayerSystem, symbol);
+                            symbol.descriptor.Generate(this, context, symbol);
                         }
                         break;
                     case Branch branch:
@@ -119,11 +84,11 @@ namespace ProceduralPlant
             MeshRenderer meshRenderer_ = sub.AddComponent<MeshRenderer>();
             if (flags.HasFlag(OrganFlags.Branch))
             {
-                meshRenderer_.sharedMaterial = m_BranchMaterial;
+                meshRenderer_.sharedMaterial = m_Species.branchMaterial;
             }
             else if (flags.HasFlag(OrganFlags.Leaf))
             {
-                meshRenderer_.sharedMaterial = m_LeafMaterial;
+                meshRenderer_.sharedMaterial = m_Species.leafMaterial;
             }
             var mesh = new Mesh();
             mesh.name = $"Procedural Plant Mesh {name}";
@@ -135,24 +100,30 @@ namespace ProceduralPlant
         
         public void Refresh(StringBuilder error = null)
         {
+            if (m_Species == null)
+            {
+                error?.Append("\nSpecify a plant species first. (Plant species is an asset, which can be created via the right-click Create menu.)");
+                return;
+            }
+            
             for (int i = this.transform.childCount - 1; i >= 0; --i)
             {
                 var child = this.transform.GetChild(i) as Transform;
                 Object.DestroyImmediate(child!.gameObject);
             }
 
-            lindenmayerSystem = LindenmayerSystem.Compile(lindenmayerSystemDescription, this.m_ParametersInfo, error);
+            lindenmayerSystem = LindenmayerSystem.Compile(m_Species.description, error);
             if (lindenmayerSystem == null)
             {
                 return;
             }
-            for (int i = 0; i < iterationCount; ++i)
+            for (int i = 0; i < m_Species.iterationCount; ++i)
             {
-                lindenmayerSystem.Simulate();
+                lindenmayerSystem.Simulate(this.m_RandomSeed);
             }
             lindenmayerSystem.MarkOrganFlags();
 
-            var context = new GenerationContext(this.m_ParametersInfo);
+            var context = new GenerationContext(this.m_Species);
             Generate(context, lindenmayerSystem.current);
 
             foreach (Transform childTransform in this.transform)

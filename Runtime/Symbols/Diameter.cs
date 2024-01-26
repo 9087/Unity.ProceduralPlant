@@ -6,9 +6,9 @@ namespace ProceduralPlant.Symbols
     [Symbol("!")]
     public class DiameterDecrease : Descriptor
     {
-        public override void Generate(GenerationContext context, LindenmayerSystem lindenmayerSystem, Symbol symbol)
+        public override void Generate(Plant plant, GenerationContext context, Symbol symbol)
         {
-            context.Thin(lindenmayerSystem.parametersInfo.thinningRate);
+            context.Thin(plant.plantAsset.thinningRate);
         }
     }
 }
