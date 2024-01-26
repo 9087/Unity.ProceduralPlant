@@ -1,6 +1,5 @@
 using System.Text;
 using UnityEditor;
-using UnityEngine;
 
 namespace ProceduralPlant.Editor
 {
@@ -20,8 +19,6 @@ namespace ProceduralPlant.Editor
 
         public override void OnInspectorGUI()
         {
-            bool dirty = false;
-
             var plantComponent = this.target as Plant;
             if (plantComponent == null) return;
             
