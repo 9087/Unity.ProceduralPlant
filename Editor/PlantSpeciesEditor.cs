@@ -8,8 +8,9 @@ namespace ProceduralPlant.Editor
     {
         public override void OnInspectorGUI()
         {
-            bool updated = this.serializedObject.UpdateIfRequiredOrScript();
-            
+            var plantSpecies = this.serializedObject.targetObject as PlantSpecies;
+            if (plantSpecies == null) return;
+            this.serializedObject.Update();
             EditorGUI.BeginChangeCheck();
             
             EditorGUILayout.PropertyField(this.serializedObject.FindProperty("m_Rule"));
@@ -33,7 +34,8 @@ namespace ProceduralPlant.Editor
             EditorGUI.indentLevel -= 1;
             #endregion
 
-            if (!EditorGUI.EndChangeCheck() && !updated)
+            plantSpecies!.dirty |= EditorGUI.EndChangeCheck();
+            if (!plantSpecies.dirty)
             {
                 return;
             }
@@ -50,6 +52,7 @@ namespace ProceduralPlant.Editor
                     plant.Refresh();
                 }
             };
+            plantSpecies.dirty = false;
         }
     }
 }
