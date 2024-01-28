@@ -1,5 +1,6 @@
 using System.Text;
 using UnityEditor;
+using UnityEngine;
 
 namespace ProceduralPlant.Editor
 {
@@ -43,7 +44,29 @@ namespace ProceduralPlant.Editor
                 {
                     EditorGUILayout.HelpBox(error, MessageType.Error);
                 }
+                return;
             }
+
+            int vertexCount = 0;
+            int triangleCount = 0;
+            foreach (Transform childTransform in plantComponent.gameObject.transform)
+            {
+                var meshFilter = childTransform.GetComponent<MeshFilter>();
+                if (meshFilter == null) return;
+                var mesh = meshFilter.sharedMesh;
+                if (mesh == null) return;
+                vertexCount += mesh.vertexCount;
+                triangleCount += mesh.triangles.Length;
+            }
+
+            EditorGUILayout.LabelField(
+                "Statistics",
+                $"Verts: <b>{vertexCount}</b>, Tris: <b>{triangleCount}</b>",
+                new GUIStyle(GUI.skin.label)
+                {
+                    richText = true
+                }
+            );
         }
     }
 }
