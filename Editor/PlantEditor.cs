@@ -49,8 +49,10 @@ namespace ProceduralPlant.Editor
 
             int vertexCount = 0;
             int triangleCount = 0;
+            int gameObjectCount = 0;
             foreach (Transform childTransform in plantComponent.gameObject.transform)
             {
+                gameObjectCount += 1;
                 var meshFilter = childTransform.GetComponent<MeshFilter>();
                 if (meshFilter == null) return;
                 var mesh = meshFilter.sharedMesh;
@@ -61,7 +63,7 @@ namespace ProceduralPlant.Editor
 
             EditorGUILayout.LabelField(
                 "Statistics",
-                $"Verts: <b>{vertexCount}</b>, Tris: <b>{triangleCount}</b>",
+                $"Object: <b>{gameObjectCount}</b>,  Verts: <b>{vertexCount}</b>,  Tris: <b>{triangleCount}</b>",
                 new GUIStyle(GUI.skin.label)
                 {
                     richText = true
