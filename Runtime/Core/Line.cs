@@ -28,6 +28,12 @@ namespace ProceduralPlant.Core
             this._none = false;
         }
 
+        public Line(Point start, Point end, DiameterRange diameterRange) : this(start, end)
+        {
+            this.start.diameter = diameterRange.start;
+            this.end.diameter = diameterRange.end;
+        }
+
         public static bool operator ==(Line a, Line b)
         {
             if (a._none != b._none)

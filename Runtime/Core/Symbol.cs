@@ -8,17 +8,27 @@ namespace ProceduralPlant.Core
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public class SymbolAttribute : Attribute
     {
-        public string name = null;
+        public readonly string name = null;
         
         public SymbolAttribute(string name)
         {
             this.name = name;
         }
     }
+
+    public struct DiameterRange
+    {
+        public float start;
+        public float end;
+        
+        public static DiameterRange none => new();
+    }
     
     public class Symbol : Node
     {
         internal static readonly Dictionary<string, Descriptor> descriptors = new();
+
+        internal DiameterRange diameterRange;
 
         public string name { get; private set; } = null;
 

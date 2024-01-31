@@ -77,27 +77,8 @@ namespace ProceduralPlant.Symbols
         public override void Generate(Plant plant, GenerationContext context, Symbol symbol)
         {
             using var old = context.Clone();
-            context.MoveForwardWithLine(plant.plantAsset.length);
-            if (old.last == Line.none)
-            {
-                GeneratePipe(context, plant.sideCount, context.last, symbol.organFlags);
-            }
-            else
-            {
-                float curveSize = 0.1f;
-                var line = context.last.Range(curveSize, symbol.organFlags.HasFlag(OrganFlags.Tip) ? 1 : (1 - curveSize));
-                GeneratePipe(context, plant.sideCount, line, symbol.organFlags);
-                var from = old.last.Sample(1 - curveSize);
-                var to = line.start;
-                var curve = new Line(from, to);
-                int segmentCount = 1;
-                float segment = 1.0f / segmentCount;
-                for (int i = 0; i < segmentCount; i++)
-                {
-                    var s = curve.Range(i * segment, (i + 1) * segment);
-                    GeneratePipe(context, plant.sideCount, s, symbol.organFlags);
-                }
-            }
+            context.MoveForwardWithLine(plant.plantAsset.length, symbol);
+            GeneratePipe(context, plant.sideCount, context.last, symbol.organFlags);
         }
     }
 }

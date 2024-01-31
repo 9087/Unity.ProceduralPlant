@@ -121,9 +121,9 @@ namespace ProceduralPlant
             {
                 lindenmayerSystem.Simulate(this.m_RandomSeed);
             }
-            lindenmayerSystem.MarkOrganFlags();
-
-            var context = new GenerationContext(this.m_Species);
+            
+            lindenmayerSystem.Pregenerate(this.species);
+            var context = new GenerationContext();
             Generate(context, lindenmayerSystem.current);
 
             foreach (Transform childTransform in this.transform)

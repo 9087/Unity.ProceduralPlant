@@ -63,7 +63,7 @@ namespace ProceduralPlant.Editor
 
             EditorGUILayout.LabelField(
                 "Statistics",
-                $"Object: <b>{gameObjectCount}</b>,  Verts: <b>{vertexCount}</b>,  Tris: <b>{triangleCount}</b>",
+                $"Objects: <b>{gameObjectCount}</b>,  Verts: <b>{vertexCount}</b>,  Tris: <b>{triangleCount}</b>",
                 new GUIStyle(GUI.skin.label)
                 {
                     richText = true

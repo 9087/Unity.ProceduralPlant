@@ -78,16 +78,5 @@ namespace ProceduralPlant.Core
                 diameter = this.diameter,
             };
         }
-
-        public Point Thin(float thinningRate)
-        {
-            return new()
-            {
-                position = this.position,
-                rotation = this.rotation,
-                scale = this.scale,
-                diameter = this.diameter * (1 - thinningRate),
-            };
-        }
     }
 }

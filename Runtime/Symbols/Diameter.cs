@@ -8,7 +8,7 @@ namespace ProceduralPlant.Symbols
     {
         public override void Generate(Plant plant, GenerationContext context, Symbol symbol)
         {
-            context.Thin(plant.plantAsset.thinningRate);
+            // Diameter generated in `LindenmayerSystem.PregenerateDiameter`
         }
     }
 }

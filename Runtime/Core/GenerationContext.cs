@@ -34,14 +34,12 @@ namespace ProceduralPlant.Core
         
         public Line last { get; private set; } = Line.none;
 
-        public GenerationContext(PlantSpecies plantSpecies) : this(plantSpecies, null)
+        public GenerationContext() : this(null)
         {
         }
 
-        private GenerationContext(PlantSpecies plantSpecies, MeshBuffer meshBuffer)
+        private GenerationContext(MeshBuffer meshBuffer)
         {
-            if (plantSpecies != null)
-                this.current = current.Thin(1 - plantSpecies.initialDiameter);
             this.buffer = meshBuffer ?? new();
         }
 
@@ -67,24 +65,19 @@ namespace ProceduralPlant.Core
             _onPointArrived?.Invoke(current);
         }
 
-        public void MoveForwardWithLine(float length)
+        public void MoveForwardWithLine(float length, Symbol symbol)
         {
             var oldLast = this.last;
             var oldCurrent = this.current;
             var newCurrent = this.current.MoveForward(length);
             this.current = newCurrent;
-            this.last = new Line(oldLast != Line.none ? oldLast.end : oldCurrent, newCurrent);
+            this.last = new Line(oldLast != Line.none ? oldLast.end : oldCurrent, newCurrent, symbol.diameterRange);
             this._onPointArrived?.Invoke(this.current);
         }
 
         public void Rotate(Quaternion delta)
         {
             current = this.current.Rotate(delta);
-        }
-
-        public void Thin(float thinningRate)
-        {
-            current = this.current.Thin(thinningRate);
         }
     }
 }

@@ -1,9 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using ProceduralPlant.Symbols;
-using UnityEditor;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace ProceduralPlant.Core
 {
@@ -116,19 +117,20 @@ namespace ProceduralPlant.Core
             return this;
         }
 
-        public void MarkOrganFlags()
+        public void Pregenerate(PlantSpecies species)
         {
-            MarkOrganFlags(this.current);
+            PregenerateOrganFlags(this.current);
+            PregenerateDiameter(species, this.current, 0, 0);
         }
 
-        private static OrganFlags MarkOrganFlags(Node node)
+        private static OrganFlags PregenerateOrganFlags(Node node)
         {
             if (node == null)
             {
                 return OrganFlags.Tip;
             }
             node.organFlags = OrganFlags.None;
-            var propagation = MarkOrganFlags(node.next);
+            var propagation = PregenerateOrganFlags(node.next);
             switch (node)
             {
                 case Symbol symbol:
@@ -143,13 +145,62 @@ namespace ProceduralPlant.Core
                     node.organFlags |= OrganFlags.Leaf;
                     break;
                 case Branch branch:
-                    if (!MarkOrganFlags(branch.content).HasFlag(OrganFlags.Tip))
+                    if (!PregenerateOrganFlags(branch.content).HasFlag(OrganFlags.Tip))
                     {
                         propagation &= ~OrganFlags.Tip;
                     }
                     break;
             }
             return propagation;
+        }
+
+        private static float PregenerateDiameter(PlantSpecies species, Node node, float forward, int deep)
+        {
+            float backward = float.PositiveInfinity;
+            if (node == null)
+                return backward;
+            if (node is Symbol { descriptor: DiameterDecrease })
+            {
+                forward = 0;
+                backward = 0;
+                deep++;
+            }
+            float forward_ = forward;
+            if (node is Symbol { descriptor: MoveForwardWithLine })
+                forward++;
+            backward = Mathf.Min(backward, PregenerateDiameter(species, node.next, forward, deep));
+            if (node is Branch branch)
+                backward = Mathf.Min(backward, PregenerateDiameter(species, branch.content, forward, deep));
+            float backward_ = backward;
+            if (node is Symbol { descriptor: MoveForwardWithLine })
+                backward++;
+            if (node is Symbol { descriptor: MoveForwardWithLine } symbol )
+            {
+                float p = 1 - species.thinningRate;
+                float from = species.initialDiameter * Mathf.Pow(p, deep);
+                float to = species.initialDiameter * Mathf.Pow(p, float.IsPositiveInfinity(backward_) ? deep : deep + 1);
+                float total = backward_ + forward_ + 1;
+                float delta = to - from;
+                if (float.IsPositiveInfinity(backward_))
+                {
+                    if (float.IsPositiveInfinity(total))
+                        symbol.diameterRange = new DiameterRange() { start = from + delta, end = from + delta };
+                    else
+                        throw new Exception();
+                }
+                else
+                {
+                    if (float.IsPositiveInfinity(total))
+                        symbol.diameterRange = new DiameterRange() { start = from, end = from };
+                    else
+                        symbol.diameterRange = new DiameterRange
+                        {
+                            start = from + delta * (float)(1 - (backward_ + 1) / (float)total),
+                            end = from + delta * (float)(1 - backward_ / (float)total)
+                        };
+                }
+            }
+            return backward;
         }
 
         public override string ToString()
