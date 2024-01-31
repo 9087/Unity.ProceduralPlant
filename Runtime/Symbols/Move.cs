@@ -16,10 +16,12 @@ namespace ProceduralPlant.Symbols
     [Symbol("F")]
     public class MoveForwardWithLine : MoveForwardWithoutLine
     {
-        private static void GeneratePipe(GenerationContext context, int sideCount, Line line, OrganFlags organFlags)
+        private static void GeneratePipe(GenerationContext context, int sideCount, Line line, Symbol symbol)
         {
             var buffer = context.buffer;
-            var meshInfo = buffer.Prepare(organFlags, sideCount * 2);
+            var meshInfo = buffer.Prepare(symbol.organFlags, sideCount * 2);
+
+            line = line.Elongate(symbol.length + 0.01f);
             
             var sAxis = line.start.rotation * Vector3.forward;
             var eAxis = line.end.rotation * Vector3.forward;
@@ -78,7 +80,9 @@ namespace ProceduralPlant.Symbols
         {
             using var old = context.Clone();
             context.MoveForwardWithLine(plant.plantAsset.length, symbol);
-            GeneratePipe(context, plant.sideCount, context.last, symbol.organFlags);
+            if (symbol.merged)
+                return;
+            GeneratePipe(context, plant.sideCount, context.last, symbol);
         }
     }
 }

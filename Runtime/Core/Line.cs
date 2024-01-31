@@ -97,6 +97,7 @@ namespace ProceduralPlant.Core
 
         public Point Sample(float progress)
         {
+            Debug.Assert(progress >= 0 && progress <= 1);
             var scale = start.scale + progress * (end.scale - start.scale);
             var diameter = start.diameter + progress * (end.diameter - start.diameter);
             var p0 = start.position;
@@ -117,6 +118,15 @@ namespace ProceduralPlant.Core
         public Line Range(float from, float to)
         {
             return new Line(this.Sample(from), this.Sample(to));
+        }
+
+        public Line Elongate(float k)
+        {
+            var elongatedEnd = end;
+            elongatedEnd.scale = start.scale + k * (end.scale - start.scale);
+            elongatedEnd.diameter = start.diameter + k * (end.diameter - start.diameter);
+            elongatedEnd.position = start.position + k * (end.position - start.position);
+            return new Line(start, elongatedEnd);
         }
     }
 }

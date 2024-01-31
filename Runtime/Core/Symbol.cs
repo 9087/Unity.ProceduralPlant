@@ -30,6 +30,9 @@ namespace ProceduralPlant.Core
 
         internal DiameterRange diameterRange;
 
+        internal int length = 1;
+        internal bool merged = false;
+
         public string name { get; private set; } = null;
 
         public Descriptor descriptor => descriptors.GetValueOrDefault(name);

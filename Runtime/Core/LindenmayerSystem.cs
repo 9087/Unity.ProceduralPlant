@@ -120,6 +120,7 @@ namespace ProceduralPlant.Core
         public void Pregenerate(PlantSpecies species)
         {
             PregenerateOrganFlags(this.current);
+            MergeBranch(null, this.current);
             PregenerateDiameter(species, this.current, 0, 0);
         }
 
@@ -154,6 +155,38 @@ namespace ProceduralPlant.Core
             return propagation;
         }
 
+        private static void MergeBranch(Symbol last, Node current)
+        {
+            if (current == null) return;
+            if (current is Symbol { descriptor: MoveForwardWithLine } symbol)
+            {
+                if (last != null)
+                {
+                    symbol.merged = true;
+                    last.length++;
+                }
+                else
+                {
+                    last = symbol;
+                }
+            }
+            else if (current is Polygon ||
+                     current is Symbol { descriptor: RollIncrease } ||
+                     current is Symbol { descriptor: RollDecrease } ||
+                     current is Symbol { descriptor: null })
+            {
+            }
+            else
+            {
+                last = null;
+            }
+            MergeBranch(last, current.next);
+            if (current is Branch branch)
+            {
+                MergeBranch(null, branch.content);
+            }
+        }
+        
         private static float PregenerateDiameter(PlantSpecies species, Node node, float forward, int deep)
         {
             float backward = float.PositiveInfinity;
