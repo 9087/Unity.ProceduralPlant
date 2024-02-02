@@ -59,16 +59,16 @@ L->['''^^{-f+f+f-|-f+f+f}];
 
 ```
 n = 5, δ = 18
-(plant);
-plant     ->    (internode)+[(plant)+(flower)]--//[--(leaf)](internode)[++(leaf)]-[(plant)(flower)]++(plant)(flower);
-internode ->    F(seg)[//&&(leaf)][//^^(leaf)]F(seg);
-seg       -0.1> (seg)[//&&(leaf)][//^^leaf]F(seg);
-seg       -0.7> (seg)F(seg);
-seg       -0.2> (seg);
-leaf      ->    ['{+f-ff-f+|+f-ff-f}];
-flower    ->    [&&&(pedicel)'/(wedge)////(wedge)////(wedge)////(wedge)////(wedge)];
-pedicel   ->    FF;
-wedge     ->    ['^F][{&&&&-f+f|-f+f}];
+"plant";
+"plant"     ->    "internode"+["plant"+"flower"]--//[--"leaf"]"internode"[++"leaf"]-["plant""flower"]++"plant""flower";
+"internode" ->    F"seg"[//&&"leaf"][//^^"leaf"]F"seg";
+"seg"       -0.1> "seg"[//&&"leaf"][//^^leaf]F"seg";
+"seg"       -0.7> "seg"F"seg";
+"seg"       -0.2> "seg";
+"leaf"      ->    ['{+f-ff-f+|+f-ff-f}];
+"flower"    ->    [&&&"pedicel"'/"wedge"////"wedge"////"wedge"////"wedge"////"wedge"];
+"pedicel"   ->    FF;
+"wedge"     ->    ['^F][{&&&&-f+f|-f+f}];
 
 ```
 

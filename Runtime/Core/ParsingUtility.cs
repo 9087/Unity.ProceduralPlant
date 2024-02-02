@@ -25,6 +25,14 @@ namespace ProceduralPlant.Core
         {
             identifier = null;
             using var transaction = context.CreateTransaction();
+            if (context.current != '\"' && context.current != '\'')
+            {
+                if (!Letter(context, out var _)) return false;
+                identifier = transaction.Finish();
+                return true;
+            }
+            char quotation = context.current;
+            context.Step();
             if (!Letter(context, out var _)) return false;
             while (true)
             {
@@ -32,7 +40,10 @@ namespace ProceduralPlant.Core
                 if (Letter(context, out var _)) continue;
                 break;
             }
+            if (context.current != quotation) return false;
+            context.Step();
             identifier = transaction.Finish();
+            identifier = identifier.Substring(1, identifier.Length - 2);
             return true;
         }
 
@@ -102,19 +113,10 @@ namespace ProceduralPlant.Core
             {
                 return true;
             }
-            else if (context.current == '(')
+            else if (Identifier(context, out var identifier))
             {
-                using var transaction = context.CreateTransaction();
-                context.Step();
-                if (Identifier(context, out var identifier))
-                {
-                    symbol = new Symbol(identifier);
-                    if (context.current != ')') return false;
-                    context.Step();
-                    transaction.Finish();
-                    return true;
-                }
-                return false;
+                symbol = new Symbol(identifier);
+                return true;
             }
             else if (Letter(context, out var letter))
             {

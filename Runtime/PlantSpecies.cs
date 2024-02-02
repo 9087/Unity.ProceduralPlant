@@ -99,16 +99,16 @@ namespace ProceduralPlant
         void Figure_1_26()
         {
             Undo.RecordObject(this, "Apply template");
-            m_Rule     = "(plant);\n" +
-                                "plant->(internode)+[(plant)+(flower)]--//[--(leaf)](internode)[++(leaf)]-[(plant)(flower)]++(plant)(flower);\n" +
-                                "internode->F(seg)[//&&(leaf)][//^^(leaf)]F(seg);\n" +
-                                "seg-0.1>(seg)[//&&(leaf)][//^^leaf]F(seg);\n" +
-                                "seg-0.7>(seg)F(seg);\n" +
-                                "seg-0.2>(seg);\n" +
-                                "leaf->['{+f-ff-f+|+f-ff-f}];\n" +
-                                "flower->[&&&(pedicel)'/(wedge)////(wedge)////(wedge)////(wedge)////(wedge)];\n" +
-                                "pedicel->FF;\n" +
-                                "wedge->['^F][{&&&&-f+f|-f+f}];";
+            m_Rule     = "\"plant\";\n" +
+                         "\"plant\"->\"internode\"+[\"plant\"+\"flower\"]--//[--\"leaf\"]\"internode\"[++\"leaf\"]-[\"plant\"\"flower\"]++\"plant\"\"flower\";\n" +
+                         "\"internode\"->F\"seg\"[//&&\"leaf\"][//^^\"leaf\"]F\"seg\";\n" +
+                         "\"seg\"-0.1>\"seg\"[//&&\"leaf\"][//^^leaf]F\"seg\";\n" +
+                         "\"seg\"-0.7>\"seg\"F\"seg\";\n" +
+                         "\"seg\"-0.2>\"seg\";\n" +
+                         "\"leaf\"->['{+f-ff-f+|+f-ff-f}];\n" +
+                         "\"flower\"->[&&&\"pedicel\"'/\"wedge\"////\"wedge\"////\"wedge\"////\"wedge\"////\"wedge\"];\n" +
+                         "\"pedicel\"->FF;\n" +
+                         "\"wedge\"->['^F][{&&&&-f+f|-f+f}];";
             m_Angle           = 18f;
             m_Length          = 0.6f;
             m_ThinningRate    = 0.5f;
